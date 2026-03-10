@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>USCC Pattern Recoloring Tool</title>
+<title>USCC Loop Pattern Recoloring Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
@@ -108,12 +108,12 @@
 <body>
 <nav class="site-nav">
   <span class="nav-brand">USCC Tools</span>
-  <a href="index.html" class="active"><span class="nav-icon">🎨</span> Pattern Recoloring</a>
+  <a href="index.html" class="active"><span class="nav-icon">🎨</span> Loop Pattern Recoloring</a>
   <a href="vmix-bulk-editor.html"><span class="nav-icon">🎛️</span> vMix Title Controller</a>
 </nav>
 
 <div class="header">
-  <h1>🎨 Pattern Recoloring Tool</h1>
+  <h1>🎨 Loop Pattern Recoloring Tool</h1>
   <span class="subtitle">U.S. Chamber of Commerce Color System</span>
 </div>
 
@@ -485,11 +485,10 @@ async function processAll() {
     // Grayscale → Colorize (full color replace)
     // Use max channel so colored areas map to full target intensity
     for (let p = 0; p < data.length; p += 4) {
-      const maxC = Math.max(data[p], data[p+1], data[p+2]);
-      const t = maxC / 255;
-      data[p]   = Math.round(tR * t);
-      data[p+1] = Math.round(tG * t);
-      data[p+2] = Math.round(tB * t);
+      if (data[p+3] === 0) continue; // skip fully transparent pixels
+      data[p]   = tR;
+      data[p+1] = tG;
+      data[p+2] = tB;
       // alpha unchanged
     }
 
