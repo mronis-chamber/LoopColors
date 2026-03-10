@@ -94,9 +94,23 @@
   .hidden { display:none!important; }
   .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.6s linear infinite; }
   @keyframes spin { to{transform:rotate(360deg)} }
+
+/* ── Site Nav ── */
+.site-nav { display:flex; align-items:center; gap:0; background:#111827; border-bottom:2px solid #1f6feb; padding:0 20px; height:42px; font-family:'Segoe UI',system-ui,-apple-system,sans-serif; position:sticky; top:0; z-index:9998; }
+.site-nav .nav-brand { font-size:11px; font-weight:700; color:#8b949e; letter-spacing:1.5px; text-transform:uppercase; margin-right:24px; white-space:nowrap; }
+.site-nav a { display:flex; align-items:center; gap:6px; padding:10px 18px; font-size:13px; font-weight:600; color:#8b949e; text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; white-space:nowrap; }
+.site-nav a:hover { color:#e6edf3; background:rgba(255,255,255,0.04); }
+.site-nav a.active { color:#58a6ff; border-bottom-color:#1f6feb; }
+.site-nav a .nav-icon { font-size:15px; }
+
 </style>
 </head>
 <body>
+<nav class="site-nav">
+  <span class="nav-brand">USCC Tools</span>
+  <a href="index.html" class="active"><span class="nav-icon">🎨</span> Pattern Recoloring</a>
+  <a href="vmix-bulk-editor.html"><span class="nav-icon">🎛️</span> vMix Title Controller</a>
+</nav>
 
 <div class="header">
   <h1>🎨 Pattern Recoloring Tool</h1>

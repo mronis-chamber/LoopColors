@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vMix Title Controller</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:       #f0f2f6;
+  --surface:  #ffffff;
+  --s2:       #f5f7fa;
+  --border:   #e3e7ef;
+  --border2:  #cdd3e0;
+  --text:     #18202e;
+  --text2:    #556080;
+  --text3:    #99a3b8;
+  --accent:   #313bfb;
+  --acl:      #eef0ff;
+  --success:  #00b341;
+  --danger:   #e8230a;
+  --warn:     #e07800;
+  --sh:       0 1px 3px rgba(0,0,0,0.07);
+  --sh2:      0 2px 10px rgba(0,0,0,0.09);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;min-height:100vh;}
+
+/* ── Header ── */
+header{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:42px;z-index:200;box-shadow:var(--sh);}
+.logo{font-weight:700;font-size:0.9rem;display:flex;align-items:center;gap:9px;letter-spacing:-0.01em;}
+.logo-sq{width:10px;height:10px;background:var(--accent);}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.hdr-right input{padding:5px 9px;border:1px solid var(--border2);background:var(--s2);font-family:'Inter',sans-serif;font-size:0.75rem;color:var(--text);outline:none;border-radius:4px;}
+.hdr-right input:focus{border-color:var(--accent);}
+.conn-sep{color:var(--text3);font-size:0.8rem;}
+.status-pill{display:flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid var(--border);border-radius:20px;font-size:0.7rem;color:var(--text2);background:var(--s2);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;}
+.dot.ok {background:var(--success);box-shadow:0 0 0 3px rgba(0,179,65,0.18);}
+.dot.err{background:var(--danger); box-shadow:0 0 0 3px rgba(232,35,10,0.18);}
+
+/* ── Layout ── */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 94px);}
+
+/* ── Sidebar ── */
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+.sb-sect{display:flex;flex-direction:column;gap:0;}
+.sb-lbl{font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+label{display:block;font-size:0.7rem;font-weight:500;color:var(--text2);margin-bottom:3px;}
+input[type="text"],input[type="number"]{width:100%;padding:7px 9px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8rem;outline:none;border-radius:4px;transition:border-color 0.14s,box-shadow 0.14s;}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(49,59,251,0.1);}
+.field{margin-bottom:8px;}
+hr{border:none;border-top:1px solid var(--border);}
+textarea{width:100%;padding:7px 9px;border:1px solid var(--border2);background:#fff;color:var(--text);font-family:'Inter',monospace;font-size:0.75rem;outline:none;border-radius:4px;resize:vertical;}
+textarea:focus{border-color:var(--accent);}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 13px;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;border:none;border-radius:4px;transition:all 0.12s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#2530e0;}
+.btn-outline{background:#fff;border:1px solid var(--border2);color:var(--text);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--acl);}
+.btn-danger{background:#fff;border:1px solid var(--danger);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-warn{background:#fff;border:1px solid var(--warn);color:var(--warn);}
+.btn-warn:hover{background:var(--warn);color:#fff;}
+.btn-success{background:var(--success);color:#fff;font-size:0.82rem;padding:10px 20px;}
+.btn-success:hover{background:#009836;}
+.btn:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none;}
+.btn-full{width:100%;}
+.btn-sm{padding:5px 9px;font-size:0.7rem;}
+.btn-xs{padding:3px 8px;font-size:0.65rem;}
+
+/* Input list */
+.input-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;margin-bottom:7px;}
+.input-row{display:flex;gap:4px;align-items:center;animation:fu 0.15s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.input-row input{flex:1;}
+.row-num{background:var(--s2);border:1px solid var(--border);padding:6px 4px;font-size:0.6rem;font-weight:700;color:var(--text3);flex-shrink:0;width:22px;text-align:center;border-radius:3px;}
+
+/* Layer rows */
+.layer-row{display:flex;gap:6px;align-items:center;margin-bottom:5px;animation:fu 0.15s ease;}
+.layer-row input{flex:1;font-family:'Inter',monospace;font-size:0.75rem;}
+.layer-tag{background:var(--acl);color:var(--accent);border:1px solid #c7d0ff;border-radius:3px;padding:3px 7px;font-size:0.62rem;font-weight:700;flex-shrink:0;min-width:20px;text-align:center;}
+
+/* Toggle switch */
+.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.toggle-sw{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:background 0.2s;}
+.toggle-sw input:checked+.toggle-track{background:var(--accent);}
+.toggle-track::after{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+.toggle-sw input:checked+.toggle-track::after{transform:translateX(16px);}
+.toggle-lbl{font-size:0.72rem;font-weight:500;color:var(--text2);}
+
+/* ── Content ── */
+.content{padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+
+/* ── Color Gate ── */
+#colorGate{position:fixed;inset:0;background:#0f1117;display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:0}
+#colorGate.unlocked{animation:gateFade 0.5s ease forwards;}
+@keyframes gateFade{to{opacity:0;pointer-events:none;}}
+.gate-inner{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:36px 40px;max-width:420px;width:90%;text-align:center;}
+.gate-title{font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:0.02em;}
+.gate-sub{font-size:0.75rem;color:#6b7280;margin-bottom:28px;line-height:1.6;}
+.gate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.gate-swatch{width:100%;aspect-ratio:1;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:all 0.15s;position:relative;}
+.gate-swatch:hover{transform:scale(1.08);}
+.gate-swatch.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,0.3);}
+.gate-swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.gate-swatch.wrong{animation:gateWrong 0.4s ease;}
+@keyframes gateWrong{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.gate-hint{font-size:0.68rem;color:#4b5563;margin-bottom:18px;min-height:1.2em;}
+.gate-btn{background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;}
+.gate-btn:hover{background:#2563eb;}
+.gate-btn:disabled{background:#374151;color:#6b7280;cursor:not-allowed;}
+.gate-selected-count{font-size:0.7rem;color:#6b7280;margin-top:10px;}
+.mode-tabs{display:flex;gap:3px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px;width:fit-content;}
+.mtab{padding:7px 20px;font-size:0.75rem;font-weight:600;cursor:pointer;color:var(--text2);border-radius:4px;background:transparent;border:none;font-family:'Inter',sans-serif;transition:all 0.13s;}
+.mtab.active{background:#fff;color:var(--accent);box-shadow:var(--sh);}
+.mtab:hover:not(.active){color:var(--text);}
+.mode-panel{display:none;flex-direction:column;gap:12px;}
+.mode-panel.active{display:flex;}
+
+/* Cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:16px 18px;box-shadow:var(--sh);}
+.card-title{font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Target toggle */
+.target-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.ttbtn{flex:1;padding:9px 10px;border:2px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;color:var(--text2);transition:all 0.13s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.ttbtn:hover{border-color:var(--accent);color:var(--accent);}
+.ttbtn.active{border-color:var(--accent);background:var(--acl);color:var(--accent);}
+
+/* Info row */
+.info-row{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:7px 11px;font-size:0.7rem;color:var(--text2);font-family:'Inter',monospace;}
+.info-row strong{color:var(--accent);}
+
+/* ══ PALETTE — SQUARED ══ */
+.palette-outer{display:grid;grid-template-columns:2fr 1px 3fr;gap:0 16px;}
+.pal-divider{background:var(--border);}
+.pal-half-title{font-size:0.68rem;font-weight:700;letter-spacing:0.05em;color:var(--text2);margin-bottom:10px;}
+
+.pal-row{display:flex;align-items:stretch;gap:5px;margin-bottom:5px;}
+.pal-row-lbl{width:64px;flex-shrink:0;font-size:0.58rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);display:flex;align-items:center;padding-right:4px;}
+.pal-cells{display:flex;gap:5px;flex:1;}
+
+/* Square swatch — no border-radius */
+.p-cell{
+  flex:1;cursor:pointer;
+  border:2px solid transparent;
+  transition:all 0.13s;
+  box-shadow:var(--sh);
+  display:flex;flex-direction:column;
+  position:relative;
+  border-radius:0 !important;  /* SQUARED */
+}
+.p-cell:hover{transform:translateY(-2px);box-shadow:var(--sh2);}
+.p-cell.selected{border-color:#1a1d23 !important;box-shadow:0 0 0 2px rgba(26,29,35,0.3) !important;}
+.p-cell.selected::before{content:'✓';position:absolute;top:5px;right:6px;font-size:0.9rem;font-weight:800;z-index:2;}
+.p-cell-dark.selected::before{color:#fff;}
+.p-cell-light.selected::before{color:rgba(0,0,0,0.5);}
+.p-cell-color{flex:1;min-height:38px;}
+.p-cell-info{padding:4px 5px 5px;background:#fff;}
+.p-cell-name{font-size:0.56rem;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:2px;}
+.p-cell-vals{font-size:0.52rem;color:var(--text2);line-height:1.45;font-family:'Inter',monospace;}
+
+/* Selected bar */
+.sel-bar{display:flex;align-items:center;gap:11px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:9px 13px;margin-bottom:12px;min-height:50px;}
+.sel-preview{width:38px;height:38px;flex-shrink:0;border:1px solid rgba(0,0,0,0.08);}  /* no border-radius = square */
+.sel-info{flex:1;}
+.sel-name{font-size:0.8rem;font-weight:700;}
+.sel-meta{font-size:0.68rem;color:var(--text2);font-family:'Inter',monospace;margin-top:2px;}
+.sel-vmix{font-size:0.65rem;color:var(--text3);font-family:'Inter',monospace;margin-top:1px;}
+.no-sel{font-size:0.75rem;color:var(--text3);font-style:italic;}
+.sel-right{font-size:0.68rem;color:var(--text2);text-align:right;line-height:1.7;flex-shrink:0;}
+.sel-right strong{color:var(--text);font-family:'Inter',monospace;}
+
+/* Custom color */
+.custom-row{display:flex;align-items:flex-end;gap:7px;padding-top:10px;border-top:1px solid var(--border);}
+.custom-well{width:34px;height:34px;border:1px solid var(--border2);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;border-radius:0;}  /* squared */
+.custom-well input[type="color"]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0;}
+.custom-well-fill{position:absolute;inset:0;}
+
+/* Preview URL */
+.preview-box{background:var(--s2);border:1px solid var(--border);border-left:3px solid var(--accent);padding:9px 13px;display:none;margin-top:10px;border-radius:0 4px 4px 0;}
+.preview-box.visible{display:block;}
+.preview-lbl{font-size:0.6rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
+.preview-url{font-size:0.68rem;color:var(--text);word-break:break-all;line-height:1.75;font-family:'Inter',monospace;}
+.preview-url em{color:var(--accent);font-style:normal;font-weight:700;}
+
+/* Apply bar */
+.apply-bar{display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.n-chip{background:var(--s2);border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.68rem;color:var(--text2);margin-left:auto;}
+.n-chip strong{color:var(--accent);}
+.prog-wrap{height:3px;background:var(--border);border-radius:0;margin-top:6px;overflow:hidden;display:none;}
+.prog-fill{height:100%;background:var(--accent);width:0%;transition:width 0.2s;}
+
+/* ══ PATTERN CARDS ══ */
+.pattern-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;}
+.pat-card{border:2px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;padding:12px 8px 9px;transition:all 0.13s;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pat-card:hover{border-color:var(--accent);box-shadow:var(--sh2);}
+.pat-card.active{border-color:var(--accent);background:var(--acl);}
+.pat-icon{width:52px;height:36px;overflow:hidden;border-radius:0;flex-shrink:0;border:1px solid var(--border);}
+.pat-name{font-size:0.7rem;font-weight:700;color:var(--text);}
+.pat-card.active .pat-name{color:var(--accent);}
+.pat-desc{font-size:0.6rem;color:var(--text3);text-align:center;line-height:1.4;}
+.icon-dotted{background:#f5f5f5;}
+.icon-kaleid{background:linear-gradient(135deg,#313bfb,#ff2e18,#00c217);}
+.icon-linear{background:linear-gradient(90deg,#313bfb 0%,#fff 50%,#ff2e18 100%);}
+.icon-pointed{background:#f5f5f5;}
+.icon-stripe{background:repeating-linear-gradient(45deg,#313bfb,#313bfb 4px,#fff 4px,#fff 10px);}
+.icon-wedge{background:#f5f5f5;position:relative;overflow:hidden;}
+.icon-wedge::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#313bfb 50%,#f5f5f5 50%);}
+
+/* Combo bar */
+.combo-bar{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:9px 13px;display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:44px;}
+.combo-tag{background:var(--accent);color:#fff;border-radius:3px;padding:3px 9px;font-size:0.7rem;font-weight:700;}
+.combo-dot{width:20px;height:20px;flex-shrink:0;border:1px solid rgba(0,0,0,0.1);border-radius:0;}  /* square */
+.combo-none{font-size:0.72rem;color:var(--text3);font-style:italic;}
+
+/* Images step cards */
+.step-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:16px 18px;box-shadow:var(--sh);}
+.step-head{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+.step-n{width:22px;height:22px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;flex-shrink:0;}
+.step-title{font-size:0.85rem;font-weight:700;}
+.info-box{background:#eef5ff;border:1px solid #c5d9ff;border-radius:4px;padding:8px 11px;font-size:0.72rem;color:#2a5bb0;line-height:1.6;margin-bottom:10px;}
+.warn-box{background:#fff8ee;border:1px solid #ffd69a;border-radius:4px;padding:8px 11px;font-size:0.72rem;color:#9a5500;line-height:1.6;margin-bottom:10px;}
+.folder-disp{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:8px 11px;margin-bottom:8px;}
+.folder-path{font-size:0.75rem;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.folder-path.set{color:var(--success);font-weight:600;}
+.file-list{background:var(--s2);border:1px solid var(--border);border-radius:4px;max-height:320px;overflow-y:auto;margin-bottom:8px;}
+.file-item{display:flex;align-items:center;gap:7px;padding:5px 10px;border-bottom:1px solid var(--border);font-size:0.7rem;}
+.file-item:last-child{border-bottom:none;}
+.file-item:hover{background:rgba(0,0,0,0.02);}
+.local-file-row.selected-source{background:linear-gradient(90deg,rgba(49,130,206,0.15),rgba(49,130,206,0.05));border-left:4px solid var(--accent);font-weight:700;color:var(--accent)!important;}
+.local-file-row.selected-source .file-name{color:var(--accent);font-weight:700;}
+.local-file-row.selected-source::before{content:'▶ ';color:var(--accent);font-size:0.7rem;}
+.file-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-sz{color:var(--text3);font-size:0.62rem;}
+.dl-progress{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;display:none;margin-bottom:8px;}
+.dl-progress.visible{display:block;}
+.dl-item{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:0.7rem;}
+.dl-item:last-child{margin-bottom:0;}
+.dl-fname{flex:0 0 140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dl-bar-wrap{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.dl-bar{height:100%;background:var(--accent);width:0%;transition:width 0.2s;}
+.dl-st{font-size:0.65rem;width:22px;text-align:right;flex-shrink:0;}
+.dl-st.ok{color:var(--success);font-weight:700;}
+.dl-st.err{color:var(--danger);font-weight:700;}
+
+/* Dropbox folder browser */
+.db-file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px;}
+.db-file-card{border:2px solid var(--border);border-radius:4px;background:var(--s2);padding:9px 8px;cursor:pointer;transition:all 0.13s;text-align:center;}
+.db-file-card:hover{border-color:var(--accent);background:var(--acl);}
+.db-file-card.selected{border-color:var(--accent);background:var(--acl);}
+.db-file-icon{font-size:1.4rem;margin-bottom:4px;}
+.db-file-name{font-size:0.62rem;font-weight:600;color:var(--text);word-break:break-all;line-height:1.3;}
+.db-file-size{font-size:0.58rem;color:var(--text3);margin-top:2px;}
+
+/* Reference links */
+.ref-links{display:flex;gap:8px;flex-wrap:wrap;}
+.ref-link{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid var(--border2);border-radius:4px;font-size:0.72rem;font-weight:600;color:var(--accent);background:#fff;text-decoration:none;transition:all 0.12s;}
+.ref-link:hover{border-color:var(--accent);background:var(--acl);}
+.ref-link svg{flex-shrink:0;}
+
+/* Log */
+.log-wrap{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 14px;box-shadow:var(--sh);}
+.log-box{background:var(--s2);border:1px solid var(--border);border-radius:4px;font-size:0.68rem;padding:8px 11px;height:90px;overflow-y:auto;line-height:1.8;font-family:'Inter',monospace;}
+.ll{display:flex;gap:8px;}
+.lt {color:var(--text3);flex-shrink:0;}
+.lok{color:var(--success);font-weight:600;}
+.ler{color:var(--danger);font-weight:600;}
+.lin{color:var(--accent);}
+.lw {color:var(--warn);}
+
+.db-folder-card{background:#fffbf0;border-color:#f0d080;}
+.db-folder-card:hover{border-color:var(--warn);background:#fff8e0;}
+.db-folder-card.selected{border-color:var(--warn)!important;background:#fff3cc!important;}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── Site Nav ── */
+.site-nav { display:flex; align-items:center; gap:0; background:#111827; border-bottom:2px solid #1f6feb; padding:0 20px; height:42px; font-family:'Segoe UI',system-ui,-apple-system,sans-serif; position:sticky; top:0; z-index:9998; }
+.site-nav .nav-brand { font-size:11px; font-weight:700; color:#8b949e; letter-spacing:1.5px; text-transform:uppercase; margin-right:24px; white-space:nowrap; }
+.site-nav a { display:flex; align-items:center; gap:6px; padding:10px 18px; font-size:13px; font-weight:600; color:#8b949e; text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; white-space:nowrap; }
+.site-nav a:hover { color:#e6edf3; background:rgba(255,255,255,0.04); }
+.site-nav a.active { color:#58a6ff; border-bottom-color:#1f6feb; }
+.site-nav a .nav-icon { font-size:15px; }
+
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <span class="nav-brand">USCC Tools</span>
+  <a href="index.html"><span class="nav-icon">🎨</span> Pattern Recoloring</a>
+  <a href="vmix-bulk-editor.html" class="active"><span class="nav-icon">🎛️</span> vMix Title Controller</a>
+</nav>
+
+<!-- ── Color Gate ── -->
+<div id="colorGate">
+  <div class="gate-inner">
+    <div class="gate-title">🎨 Select the correct 3 colors to unlock</div>
+    <div class="gate-sub">Pick exactly 3 swatches. Choose wisely — think primary.</div>
+    <div class="gate-grid" id="gateGrid"></div>
+    <div class="gate-hint" id="gateHint"></div>
+    <button class="gate-btn" id="gateBtn" onclick="checkGate()" disabled>Unlock →</button>
+    <div class="gate-selected-count" id="gateCount">0 / 3 selected</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-sq"></div>
+    vMix Title Controller
+  </div>
+  <div class="hdr-right">
+    <input type="text"   id="vmixHost" value="localhost" style="width:100px">
+    <span class="conn-sep">:</span>
+    <input type="number" id="vmixPort" value="8088" style="width:62px">
+    <button class="btn btn-outline btn-sm" onclick="testConn()">Connect</button>
+    <div class="status-pill">
+      <div class="dot" id="dot"></div>
+      <span id="statusTxt">Not connected</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <div class="sidebar">
+
+    <!-- Inputs -->
+    <div class="sb-sect">
+      <div class="sb-lbl">Target Inputs</div>
+      <div class="input-list" id="inputList"></div>
+      <div style="display:flex;gap:5px;margin-bottom:7px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="addRow()">+ Add</button>
+        <button class="btn btn-danger btn-sm" onclick="clearRows()">Clear</button>
+      </div>
+      <div style="display:flex;gap:5px">
+        <input type="text" id="rangeInput" placeholder="e.g. 1-5 or 2,4,6" style="flex:1">
+        <button class="btn btn-outline btn-sm" onclick="addRange()">Add Range</button>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Layer names section -->
+    <div class="sb-sect">
+      <div class="sb-lbl">Layer Names</div>
+
+      <!-- Toggle: default vs custom -->
+      <div class="toggle-row">
+        <label class="toggle-sw">
+          <input type="checkbox" id="customLayersToggle" onchange="toggleCustomLayers()">
+          <div class="toggle-track"></div>
+        </label>
+        <span class="toggle-lbl" id="toggleLbl">Using defaults</span>
+      </div>
+
+      <!-- Default info (shown when toggle is off) -->
+      <div id="defaultLayerInfo">
+        <div style="font-size:0.68rem;color:var(--text3);line-height:1.55;margin-bottom:6px">
+          Default GT title layer names in use:
+        </div>
+        <div style="font-size:0.68rem;font-family:monospace;line-height:1.8;background:var(--s2);border:1px solid var(--border);border-radius:3px;padding:6px 9px;color:var(--text2)">
+          <div><span style="color:var(--text3)">Text:</span> Suzanne Clark1.Text</div>
+          <div style="padding-left:36px">SubText.Text</div>
+          <div><span style="color:var(--text3)">Fill:</span> Rectangle 2.Fill.Color</div>
+          <div style="padding-left:36px">Rectangle 4.Fill.Color</div>
+        </div>
+      </div>
+
+      <!-- Custom layer editor (shown when toggle is on) -->
+      <div id="customLayerEditor" style="display:none">
+        <div style="font-size:0.68rem;color:var(--text3);margin-bottom:8px;line-height:1.5">Enter the exact field names from your GT title file.</div>
+
+        <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Text Layers</div>
+        <div id="textLayerList"></div>
+        <button class="btn btn-outline btn-xs btn-full" style="margin-bottom:10px" onclick="addTextLayer()">+ Add Text Layer</button>
+
+        <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Fill / Color Layers</div>
+        <div id="fillLayerList"></div>
+        <button class="btn btn-outline btn-xs btn-full" onclick="addFillLayer()">+ Add Fill Layer</button>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Reference files -->
+    <div class="sb-sect">
+      <div class="sb-lbl">GT Title Files</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <a class="ref-link" href="https://www.dropbox.com/scl/fi/a2c8bftl5vrqpnv7oz904/4K-GH-SINGLE-SAMPLE_D.gtzip?rlkey=7ewjyz7x64i9ql7ks5xcnvx3h&st=afq9d2wn&dl=0" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Lower Third (Standard)
+        </a>
+        <a class="ref-link" href="https://www.dropbox.com/scl/fi/4yka023zgej7qtjfub12f/4K-GH-SINGLE-SAMPLE-SLIM_D.gtzip?rlkey=t4x495isnqu41sujkjqhyzhlr&st=mesha45y&dl=0" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Lower Third (Slim)
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ CONTENT ══ -->
+  <div class="content">
+
+    <div class="mode-tabs">
+      <button class="mtab active" onclick="switchMode('colors',this)">Title Colors</button>
+      <button class="mtab"        onclick="switchMode('images',this)">Images</button>
+    </div>
+
+    <!-- ════ COLORS MODE ════ -->
+    <div class="mode-panel active" id="mode-colors">
+
+      <!-- What to change -->
+      <div class="card">
+        <div class="card-title">Apply To</div>
+        <div class="target-toggle">
+          <button class="ttbtn active" id="tt-text" onclick="selTarget('text')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            Text Color
+          </button>
+          <button class="ttbtn" id="tt-fill" onclick="selTarget('fill')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18"/><rect x="8" y="8" width="8" height="8" opacity="0.4"/></svg>
+            Fill Color
+          </button>
+        </div>
+
+        <!-- Layer selector — shown contextually -->
+        <div id="layerSelector">
+          <!-- Populated by JS based on target + custom toggle -->
+        </div>
+
+        <div class="info-row" id="apiInfoRow">
+          Function: <strong id="apiFnDisplay">SetTextColour</strong> &nbsp;·&nbsp; SelectedName: <strong id="fieldLabel">Suzanne Clark1.Text</strong>
+        </div>
+      </div>
+
+      <!-- Palette -->
+      <div class="card">
+        <div class="card-title">Brand Color Palette — U.S. Chamber V3.0</div>
+        <div class="palette-outer">
+          <div>
+            <div class="pal-half-title">Core</div>
+            <div id="pal-core"></div>
+          </div>
+          <div class="pal-divider"></div>
+          <div>
+            <div class="pal-half-title">Extended</div>
+            <div id="pal-ext"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected + apply -->
+      <div class="card">
+        <div class="card-title">Selected Color &amp; Apply</div>
+        <div class="sel-bar" id="selBar">
+          <div class="no-sel">Click any color swatch above to select</div>
+        </div>
+        <div class="custom-row">
+          <div class="custom-well">
+            <div class="custom-well-fill" id="cwFill" style="background:#fff"></div>
+            <input type="color" id="customPicker" value="#ffffff" oninput="onCustomPicker()">
+          </div>
+          <div style="flex:1">
+            <label>Custom hex</label>
+            <input type="text" id="customHex" placeholder="RRGGBB" maxlength="6" oninput="onCustomHex()" style="text-transform:uppercase;font-family:monospace">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="useCustom()" style="align-self:flex-end">Use</button>
+        </div>
+
+        <div class="preview-box" id="prevBox">
+          <div class="preview-lbl">API URL — Input <span id="prevNum">—</span></div>
+          <div class="preview-url" id="prevUrl">—</div>
+        </div>
+
+        <div class="apply-bar">
+          <button class="btn btn-success" onclick="applyColors()" id="applyBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Apply to All Inputs
+          </button>
+          <button class="btn btn-outline" onclick="showPreview()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview URL
+          </button>
+          <div class="n-chip"><strong id="cCount">0</strong> inputs</div>
+        </div>
+        <div class="prog-wrap" id="pgC"><div class="prog-fill" id="pfC"></div></div>
+      </div>
+    </div>
+
+    <!-- ════ IMAGES MODE ════ -->
+    <div class="mode-panel" id="mode-images">
+
+      <!-- Pattern type -->
+      <div class="card">
+        <div class="card-title">Step 1 — Select Pattern Type</div>
+        <div class="pattern-grid">
+          <div class="pat-card" id="pat-dotted" onclick="selPattern('dotted')">
+            <div class="pat-icon icon-dotted">
+              <svg width="52" height="36" viewBox="0 0 52 36"><rect width="52" height="36" fill="#f5f5f5"/>
+                <circle cx="8" cy="8" r="2.5" fill="#313bfb"/><circle cx="19" cy="8" r="2.5" fill="#313bfb"/><circle cx="30" cy="8" r="2.5" fill="#313bfb"/><circle cx="41" cy="8" r="2.5" fill="#313bfb"/>
+                <circle cx="13" cy="18" r="2.5" fill="#313bfb"/><circle cx="24" cy="18" r="2.5" fill="#313bfb"/><circle cx="35" cy="18" r="2.5" fill="#313bfb"/>
+                <circle cx="8" cy="28" r="2.5" fill="#313bfb"/><circle cx="19" cy="28" r="2.5" fill="#313bfb"/><circle cx="30" cy="28" r="2.5" fill="#313bfb"/><circle cx="41" cy="28" r="2.5" fill="#313bfb"/>
+              </svg>
+            </div>
+            <div class="pat-name">Dotted</div>
+          </div>
+          <div class="pat-card" id="pat-kaleidoscope" onclick="selPattern('kaleidoscope')">
+            <div class="pat-icon icon-kaleid">
+              <svg width="52" height="36" viewBox="0 0 52 36"><polygon points="26,3 49,33 3,33" fill="rgba(255,255,255,0.2)"/><polygon points="26,33 3,3 49,3" fill="rgba(0,0,0,0.2)"/></svg>
+            </div>
+            <div class="pat-name">Kaleidoscope</div>
+          </div>
+          <div class="pat-card" id="pat-linear" onclick="selPattern('linear')">
+            <div class="pat-icon icon-linear"></div>
+            <div class="pat-name">Linear</div>
+          </div>
+          <div class="pat-card" id="pat-pointed" onclick="selPattern('pointed')">
+            <div class="pat-icon icon-pointed">
+              <svg width="52" height="36" viewBox="0 0 52 36"><rect width="52" height="36" fill="#f5f5f5"/><polygon points="0,36 26,6 52,36" fill="#313bfb" opacity="0.8"/><polygon points="0,36 26,16 52,36" fill="#313bfb" opacity="0.4"/></svg>
+            </div>
+            <div class="pat-name">Pointed</div>
+          </div>
+          <div class="pat-card" id="pat-stripe" onclick="selPattern('stripe')">
+            <div class="pat-icon icon-stripe"></div>
+            <div class="pat-name">Stripe</div>
+          </div>
+          <div class="pat-card" id="pat-wedge" onclick="selPattern('wedge')">
+            <div class="pat-icon icon-wedge"></div>
+            <div class="pat-name">Wedge</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color for pattern — same palette, no custom -->
+      <div class="card">
+        <div class="card-title">Step 2 — Select Color for Pattern</div>
+        <div class="palette-outer">
+          <div>
+            <div class="pal-half-title">Core</div>
+            <div id="img-pal-core"></div>
+          </div>
+          <div class="pal-divider"></div>
+          <div>
+            <div class="pal-half-title">Extended</div>
+            <div id="img-pal-ext"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combo display -->
+      <div class="card">
+        <div class="card-title">Step 3 — Selection Summary</div>
+        <div class="combo-bar" id="comboBar">
+          <div class="combo-none">Select a pattern and color above</div>
+        </div>
+        <div class="info-box" style="margin-bottom:0">
+          Files in your Dropbox folder should be named <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:2px">{pattern}_{hex}.mp4</code> — e.g. <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:2px">stripe_313bfb.mp4</code>
+        </div>
+      </div>
+
+      <!-- Dropbox token connect + folder browser -->
+      <div class="card">
+        <div class="card-title">Step 4 — Connect Dropbox &amp; Browse Image Folder</div>
+
+        <!-- Token entry (shown when not connected) -->
+        <div id="dbNotConnected">
+
+          <!-- Option A: Gist fetch -->
+          <div class="info-box" style="margin-bottom:12px">
+            <strong>Option A — Auto-fetch from GitHub Gist</strong><br>
+            Store your token in a secret Gist once. Anyone with the Gist ID connects instantly — no token visible, no paste needed.<br><br>
+            <strong>Setup:</strong> Go to <a href="https://gist.github.com/mronis86/83a619caa7c27e064c7c769653c34c11" target="_blank" style="color:var(--accent)">the token Gist</a> → copy the token content → paste below.
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>GitHub Gist ID or URL</label>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="dbGistId" value="https://gist.github.com/mronis86/83a619caa7c27e064c7c769653c34c11" style="flex:1;font-family:monospace;font-size:0.68rem">
+              <a href="https://gist.github.com/mronis86/83a619caa7c27e064c7c769653c34c11" target="_blank" class="btn btn-outline btn-sm" title="Open Gist to view token">↗</a>
+              <button class="btn btn-primary" onclick="dbConnectGist()" id="gistConnectBtn">Fetch &amp; Connect</button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <div style="font-size:0.65rem;color:var(--text3);font-weight:600">OR</div>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+
+          <!-- Option B: Manual paste -->
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text2);margin-bottom:6px">Option B — Paste token manually</div>
+          <div class="field">
+            <div style="display:flex;gap:6px">
+              <input type="password" id="dbTokenInput" placeholder="sl.xxxxxxxxxxxxxxxx…" style="flex:1;font-family:monospace;font-size:0.75rem">
+              <button class="btn btn-outline btn-sm" onclick="toggleTokenVis()" id="tokenVisBtn" title="Show/hide">👁</button>
+              <button class="btn btn-primary" onclick="dbConnect()">Connect</button>
+            </div>
+            <div style="font-size:0.65rem;color:var(--text3);margin-top:4px">
+              Need a token? <a href="https://www.dropbox.com/developers/apps" target="_blank" style="color:var(--accent)">dropbox.com/developers/apps</a> → your app → Settings → OAuth 2 → set expiration to <strong>No expiration</strong> → Generate.
+            </div>
+          </div>
+        </div>
+
+        <!-- Connected state -->
+        <div id="dbConnected" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="dot ok"></div>
+              <span style="font-size:0.78rem;font-weight:600;color:var(--success)" id="dbAccountName">Connected</span>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-danger btn-xs" onclick="dbDisconnect()">Disconnect</button>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label>Folder path in your Dropbox <span style="color:var(--text3);font-weight:400">(leave blank for root)</span></label>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="dbFolderPathInput" placeholder="/image-loops" style="flex:1;font-family:monospace;font-size:0.78rem">
+              <button class="btn btn-primary btn-sm" onclick="dbListFolder()">Browse</button>
+            </div>
+          </div>
+          <div id="dbError" style="display:none" class="warn-box"></div>
+          <div id="dbLoading" style="font-size:0.75rem;color:var(--text2);padding:6px 0;display:none">
+            <span style="animation:spin 1s linear infinite;display:inline-block;margin-right:6px">⟳</span> Loading folder…
+          </div>
+          <div id="dbFileArea" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-size:0.68rem;font-weight:600;color:var(--text2)">Files: <span id="dbFileCount" style="color:var(--accent)">0</span></div>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-outline btn-xs" onclick="selectAllDb()">Select All</button>
+                <button class="btn btn-outline btn-xs" onclick="clearSelDb()">Clear</button>
+                <button class="btn btn-outline btn-xs" onclick="dbListFolder()">↻ Refresh</button>
+              </div>
+            </div>
+            <div class="db-file-grid" id="dbFileGrid"></div>
+            <div style="margin-top:6px;font-size:0.65rem;color:var(--text3)">Click to select · files are queued for download automatically.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Local folder + download -->
+      <div class="step-card">
+        <div class="step-head">
+          <div class="step-n">5</div>
+          <div class="step-title">Destination Folder &amp; Download</div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text2);margin-bottom:8px">Choose where to save the downloaded files, then download.</div>
+        <div class="folder-disp">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <div class="folder-path" id="folderPath">No folder selected</div>
+        </div>
+        <div style="margin-bottom:10px">
+          <button class="btn btn-outline btn-full" onclick="selectFolder()">Choose Download Folder…</button>
+        </div>
+        <div class="field">
+          <label>Download URLs — auto-filled from Dropbox browser, or paste manually (one per line)</label>
+          <textarea id="dropboxUrls" rows="3" placeholder="https://www.dropbox.com/s/abc123/file.mp4?dl=1"></textarea>
+        </div>
+        <div class="dl-progress" id="dlProgress"></div>
+        <button class="btn btn-primary btn-full" onclick="startDownload()" id="dlBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download to Folder
+        </button>
+        <div class="prog-wrap" id="pgDl" style="margin-top:7px"><div class="prog-fill" id="pfDl"></div></div>
+      </div>
+
+      <!-- Step 5b: vMix source folder -->
+      <div class="step-card" style="border-color:var(--success);border-width:2px">
+        <div class="step-head">
+          <div class="step-n" style="background:var(--success)">5b</div>
+          <div class="step-title">Select Downloaded Folder for vMix</div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text2);margin-bottom:10px;line-height:1.6">
+          After downloading, pick the downloaded folder here. A prompt will ask for its full Windows path — open it in Explorer, click the address bar, copy &amp; paste. Saved permanently.
+        </div>
+        <div class="folder-disp" style="border-color:var(--success)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <div class="folder-path" id="vmixFolderPath">No folder selected</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="btn btn-outline" style="flex:1" onclick="selectVmixFolder()">Choose vMix Source Folder…</button>
+          <button class="btn btn-outline btn-sm" onclick="scanFolder()">Scan</button>
+        </div>
+        <div id="basePathDisplay" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:6px 10px;margin-bottom:8px;font-size:0.7rem;font-family:monospace;color:var(--text2);word-break:break-all"></div>
+        <input type="hidden" id="localBasePath">
+        <!-- file browser -->
+        <div id="existingFiles" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <div id="localBreadcrumb" style="font-size:0.68rem;color:var(--text2);font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Root</div>
+            <button class="btn btn-danger btn-xs" id="deleteSelBtn" onclick="deleteSelected()" style="display:none">🗑 Delete Selected</button>
+          </div>
+          <div class="file-list" id="fileListEl" style="max-height:260px"></div>
+          <div style="font-size:0.62rem;color:var(--text3);margin-top:3px">Click a file → auto-fills Step 6 · ☑ to select for delete · 📁 to navigate in</div>
+        </div>
+      </div>
+
+      <!-- Step 6: Apply image to vMix inputs -->
+      <div class="step-card">
+        <div class="step-head">
+          <div class="step-n">6</div>
+          <div class="step-title">Apply Image / Sequence to vMix Inputs</div>
+        </div>
+        <div class="info-box" style="margin-bottom:12px">
+          Click a file in <strong>Step 5b</strong> above — the full path appears here ready to send to vMix. For image sequences the <strong>first (lowest numbered) frame</strong> is used automatically.
+        </div>
+        <!-- Selected source display -->
+        <div id="imgSourceDisplay" style="background:var(--s2);border:2px dashed var(--border2);border-radius:4px;padding:10px 12px;margin-bottom:12px;min-height:44px;display:flex;align-items:center;gap:10px">
+          <div style="font-size:1.2rem">🎞</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:2px">Selected Source</div>
+            <div id="imgSourceLabel" style="font-size:0.75rem;font-family:monospace;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">— click a file in Step 5b above —</div>
+          </div>
+          <button class="btn btn-outline btn-xs" onclick="clearImgSource()" title="Clear">✕</button>
+        </div>
+
+        <input type="hidden" id="imgFilePath">
+
+        <!-- Image layer selector -->
+        <div style="margin-bottom:10px">
+          <label style="margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--text2)">TARGET LAYER IN VMIX</label>
+          <div style="display:flex;gap:6px">
+            <button class="ttbtn active" id="img-layer-1" onclick="selImageLayer('Image1.Source',this)">Image1.Source</button>
+            <button class="ttbtn" id="img-layer-2" onclick="selImageLayer('Image2.Source',this)">Image2.Source</button>
+          </div>
+        </div>
+
+        <div class="info-row" style="margin-bottom:12px;font-size:0.7rem">
+          Function: <strong>SetImage</strong> &nbsp;·&nbsp; SelectedName: <strong id="imgLayerLabel">Image1.Source</strong> &nbsp;·&nbsp; Value: <strong id="imgValuePreview" style="color:var(--accent);font-family:monospace;font-size:0.68rem">—</strong>
+        </div>
+
+        <div class="apply-bar">
+          <button class="btn btn-success" onclick="applyImage()" id="applyImgBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Apply to All Inputs
+          </button>
+          <button class="btn btn-outline" onclick="showImagePreview()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview URL
+          </button>
+          <div class="n-chip"><strong id="cCountImg">0</strong> inputs</div>
+        </div>
+        <div class="preview-box" id="imgPrevBox">
+          <div class="preview-lbl">API URL — Input <span id="imgPrevNum">—</span></div>
+          <div class="preview-url" id="imgPrevUrl">—</div>
+        </div>
+        <div class="prog-wrap" id="pgImg"><div class="prog-fill" id="pfImg"></div></div>
+      </div>
+
+      <!-- Dropbox folder reference -->
+      <div class="card">
+        <div class="card-title">Dropbox Image Folder</div>
+        <div style="font-size:0.72rem;color:var(--text2);margin-bottom:10px;line-height:1.6">
+          Browse the Dropbox folder to find and download image loops. Download the files you need, then use Step 6 above to apply them to your inputs.
+        </div>
+        <a class="ref-link" href="https://www.dropbox.com/scl/fo/6gg79huvx6mifb58ofqoh/AAgFVktruaDniDlSz6dBA3c?rlkey=d7090mpfq08pm8kcy92r78ji0&st=tcajwh5n&dl=0" target="_blank" style="font-size:0.78rem;padding:9px 16px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open Image Loops Folder on Dropbox ↗
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Log -->
+    <div class="log-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Activity Log</div>
+        <button class="btn btn-outline btn-xs" onclick="clearLog()">Clear</button>
+      </div>
+      <div class="log-box" id="logBox">
+        <div class="ll"><span class="lt">--:--:--</span><span class="lin">Ready.</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  PALETTE DATA
+// ═══════════════════════════════════════════════════
+const ROWS = ['Optimistic','Bright','Bold','Insightful','Impactful'];
+
+const CORE = [
+  ['Optimistic Blue','dbf5ff','219 245 255',false],
+  ['Optimistic Red', 'ffebfa','255 235 250',false],
+  ['Bright Blue',    '81eef3','129 238 243',false],
+  ['Bright Red',     'ffa3d2','255 163 210',false],
+  ['Bold Blue',      '313bfb','49 59 251',  true ],
+  ['Bold Red',       'ff2e18','255 46 24',  true ],
+  ['Insightful Blue','004f91','0 79 145',   true ],
+  ['Insightful Red', '9a2136','154 33 54',  true ],
+  ['Impactful Blue', '001f5c','0 31 92',    true ],
+  ['Impactful Red',  '450012','69 0 18',    true ],
+];
+const EXTENDED = [
+  ['Optimistic Green', 'e3ffe3','227 255 227',false],
+  ['Optimistic Yellow','f5f2d6','245 242 214',false],
+  ['Optimistic Purple','f2ebff','242 235 255',false],
+  ['Bright Green',     'adff6b','173 255 107',false],
+  ['Bright Yellow',    'fff247','255 242 71', false],
+  ['Bright Purple',    'd6baff','214 186 255',false],
+  ['Bold Green',       '00c217','0 194 23',   true ],
+  ['Bold Orange',      'ff8300','255 131 0',  true ],
+  ['Bold Purple',      'ab91ff','171 145 255',false],
+  ['Insightful Green', '42614f','66 97 79',   true ],
+  ['Insightful Orange','b1570c','177 87 12',  true ],
+  ['Insightful Purple','594570','89 69 112',  true ],
+  ['Impactful Green',  '13342b','19 52 43',   true ],
+  ['Impactful Orange', '6d3614','110 55 21',  true ],
+  ['Impactful Purple', '420a69','66 10 105',  true ],
+];
+
+// ═══════════════════════════════════════════════════
+//  DEFAULT LAYER NAMES
+// ═══════════════════════════════════════════════════
+const DEFAULT_TEXT_LAYERS = ['Suzanne Clark1.Text','SubText.Text'];
+const DEFAULT_FILL_LAYERS  = ['Rectangle 2.Fill.Color','Rectangle 4.Fill.Color'];
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let colorTarget    = 'text';   // 'text' | 'fill'
+let selectedHex    = null;
+let selectedName   = null;
+let imgSelectedHex = null;
+let imgSelectedName= null;
+let selPattern_    = null;
+let selLayerName   = null;     // the currently selected SelectedName
+let useCustom_     = false;    // custom layers toggle
+let rowCtr         = 0;
+let textLayerCtr   = 0;
+let fillLayerCtr   = 0;
+let folderHandle   = null;
+let dbFiles        = [];       // files from Dropbox folder
+
+// ═══════════════════════════════════════════════════
+//  BUILD PALETTES
+// ═══════════════════════════════════════════════════
+function buildPalette(coreId, extId, pfx) {
+  [
+    [coreId, CORE, 2],
+    [extId,  EXTENDED, 3]
+  ].forEach(([elId, data, cols]) => {
+    const el = document.getElementById(elId);
+    ROWS.forEach((row, ri) => {
+      const div = document.createElement('div'); div.className='pal-row';
+      const lbl = document.createElement('div'); lbl.className='pal-row-lbl'; lbl.textContent=row;
+      div.appendChild(lbl);
+      const cells = document.createElement('div'); cells.className='pal-cells';
+      for (let ci=0; ci<cols; ci++) {
+        const [name,hex,rgb,dark] = data[ri*cols+ci];
+        const cell = document.createElement('div');
+        cell.className = 'p-cell '+(dark?'p-cell-dark':'p-cell-light');
+        cell.id = pfx+'-sw-'+hex;
+        cell.title = name+' — #'+hex.toUpperCase();
+        cell.innerHTML = `<div class="p-cell-color" style="background:#${hex}"></div><div class="p-cell-info"><div class="p-cell-name">${name}</div><div class="p-cell-vals">RGB: ${rgb}<br>#${hex.toUpperCase()}</div></div>`;
+        cell.onclick = () => onSwatchClick(hex, name, rgb, cell, pfx);
+        cells.appendChild(cell);
+      }
+      div.appendChild(cells);
+      el.appendChild(div);
+    });
+  });
+}
+
+function onSwatchClick(hex, name, rgb, cell, pfx) {
+  document.querySelectorAll('[id^="'+pfx+'-sw-"]').forEach(s=>s.classList.remove('selected'));
+  cell.classList.add('selected');
+  if (pfx === 'col') {
+    selectedHex = hex.toUpperCase(); selectedName = name;
+    document.getElementById('customHex').value = hex.toUpperCase();
+    document.getElementById('customPicker').value = '#'+hex;
+    document.getElementById('cwFill').style.background = '#'+hex;
+    updateSelBar();
+  } else {
+    imgSelectedHex = hex.toUpperCase(); imgSelectedName = name;
+    updateComboBar();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  LAYER NAMES TOGGLE
+// ═══════════════════════════════════════════════════
+function toggleCustomLayers() {
+  useCustom_ = document.getElementById('customLayersToggle').checked;
+  document.getElementById('toggleLbl').textContent = useCustom_ ? 'Custom layer names' : 'Using defaults';
+  document.getElementById('defaultLayerInfo').style.display = useCustom_ ? 'none' : 'block';
+  document.getElementById('customLayerEditor').style.display = useCustom_ ? 'block' : 'none';
+  if (useCustom_ && document.getElementById('textLayerList').children.length === 0) {
+    // Seed with defaults
+    DEFAULT_TEXT_LAYERS.forEach(n => addTextLayer(n));
+    DEFAULT_FILL_LAYERS.forEach(n => addFillLayer(n));
+  }
+  rebuildLayerSelector();
+}
+
+function addTextLayer(val='') {
+  const list = document.getElementById('textLayerList');
+  const id = ++textLayerCtr;
+  const row = document.createElement('div'); row.className='layer-row'; row.id='tlrow-'+id;
+  row.innerHTML = `<div class="layer-tag">T</div><input type="text" value="${val}" placeholder="e.g. Text0.Text" oninput="rebuildLayerSelector()"><button class="btn btn-danger btn-xs" onclick="document.getElementById('tlrow-${id}').remove();rebuildLayerSelector()">✕</button>`;
+  list.appendChild(row);
+}
+function addFillLayer(val='') {
+  const list = document.getElementById('fillLayerList');
+  const id = ++fillLayerCtr;
+  const row = document.createElement('div'); row.className='layer-row'; row.id='flrow-'+id;
+  row.innerHTML = `<div class="layer-tag" style="background:var(--s2);color:var(--warn);border-color:#ffd6a0">F</div><input type="text" value="${val}" placeholder="e.g. Rectangle 2.FillColor" oninput="rebuildLayerSelector()"><button class="btn btn-danger btn-xs" onclick="document.getElementById('flrow-${id}').remove();rebuildLayerSelector()">✕</button>`;
+  list.appendChild(row);
+}
+
+function getTextLayers() {
+  if (!useCustom_) return DEFAULT_TEXT_LAYERS;
+  return [...document.querySelectorAll('#textLayerList input')].map(i=>i.value.trim()).filter(Boolean);
+}
+function getFillLayers() {
+  if (!useCustom_) return DEFAULT_FILL_LAYERS;
+  return [...document.querySelectorAll('#fillLayerList input')].map(i=>i.value.trim()).filter(Boolean);
+}
+
+// ═══════════════════════════════════════════════════
+//  LAYER SELECTOR (in content area)
+// ═══════════════════════════════════════════════════
+function rebuildLayerSelector() {
+  const sel = document.getElementById('layerSelector');
+  const layers = colorTarget === 'text' ? getTextLayers() : getFillLayers();
+  if (layers.length === 0) { sel.innerHTML='<div style="font-size:0.72rem;color:var(--text3);margin-bottom:10px">No layers defined.</div>'; return; }
+
+  // If only one layer, auto-select it silently
+  if (layers.length === 1) {
+    selLayerName = layers[0];
+    sel.innerHTML = '';
+    updateInfoRow();
+    return;
+  }
+
+  // Multiple: show toggle buttons
+  sel.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;';
+  layers.forEach((name, i) => {
+    const b = document.createElement('button');
+    b.className = 'btn btn-outline btn-sm' + (i===0?' active':'');
+    b.textContent = name;
+    b.style.fontFamily = 'monospace';
+    b.style.fontSize = '0.7rem';
+    if (i===0 && !selLayerName) selLayerName = name;
+    if (name === selLayerName) { b.classList.add('active'); b.style.borderColor='var(--accent)'; b.style.color='var(--accent)'; b.style.background='var(--acl)'; }
+    b.onclick = () => {
+      selLayerName = name;
+      wrap.querySelectorAll('.btn').forEach(x=>{ x.classList.remove('active'); x.style.borderColor=''; x.style.color=''; x.style.background=''; });
+      b.classList.add('active'); b.style.borderColor='var(--accent)'; b.style.color='var(--accent)'; b.style.background='var(--acl)';
+      updateInfoRow();
+    };
+    wrap.appendChild(b);
+  });
+  sel.appendChild(wrap);
+
+  // Auto-select first if nothing selected or previous selection gone
+  if (!layers.includes(selLayerName)) selLayerName = layers[0];
+  updateInfoRow();
+}
+
+function updateInfoRow() {
+  document.getElementById('fieldLabel').textContent = selLayerName || '—';
+  const fnEl = document.getElementById('apiFnDisplay');
+  if (fnEl) fnEl.textContent = colorTarget === 'fill' ? 'SetColor' : 'SetTextColour';
+}
+
+// ═══════════════════════════════════════════════════
+//  TARGET TOGGLE
+// ═══════════════════════════════════════════════════
+function selTarget(t) {
+  colorTarget = t;
+  document.querySelectorAll('.ttbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tt-'+t).classList.add('active');
+  selLayerName = null;
+  rebuildLayerSelector();
+  updateSelBar();
+}
+
+// ═══════════════════════════════════════════════════
+//  COLOR SELECTION
+// ═══════════════════════════════════════════════════
+function updateSelBar() {
+  const bar = document.getElementById('selBar');
+  if (!selectedHex) { bar.innerHTML='<div class="no-sel">Click any color swatch above to select</div>'; return; }
+  const rgb = hexToRgb(selectedHex);
+  bar.innerHTML = `
+    <div class="sel-preview" style="background:#${selectedHex}"></div>
+    <div class="sel-info">
+      <div class="sel-name">${selectedName}</div>
+      <div class="sel-meta">#${selectedHex} &nbsp;·&nbsp; RGB: ${rgb}</div>
+      <div class="sel-vmix">vMix value: <strong>#${selectedHex}</strong></div>
+    </div>
+    <div class="sel-right">
+      ${colorTarget === 'text' ? 'Text Color' : 'Fill Color'}<br>
+      <strong>${selLayerName||'—'}</strong>
+    </div>`;
+}
+
+function updateComboBar() {
+  const bar = document.getElementById('comboBar');
+  if (!selPattern_ && !imgSelectedHex) { bar.innerHTML='<div class="combo-none">Select a pattern and color above</div>'; return; }
+  const pat = selPattern_ ? cap(selPattern_) : '<em style="color:var(--text3)">none</em>';
+  const col = imgSelectedHex ? `<div class="combo-dot" style="background:#${imgSelectedHex}"></div><span>${imgSelectedName} · #${imgSelectedHex}</span>` : '<em style="color:var(--text3)">none</em>';
+  bar.innerHTML = `<div class="combo-tag">${pat}</div><div style="display:flex;align-items:center;gap:6px;font-size:0.75rem">${col}</div>`;
+}
+
+// Custom color
+function onCustomPicker() {
+  const h = document.getElementById('customPicker').value.replace('#','').toUpperCase();
+  document.getElementById('customHex').value = h;
+  document.getElementById('cwFill').style.background = '#'+h;
+}
+function onCustomHex() {
+  const h = sanitizeHex(document.getElementById('customHex').value);
+  document.getElementById('cwFill').style.background = h.length===6?'#'+h:'#fff';
+  if (h.length===6) document.getElementById('customPicker').value='#'+h;
+}
+function useCustom() {
+  const h = sanitizeHex(document.getElementById('customHex').value);
+  if (h.length!==6) { addLog('err','Enter a valid 6-digit hex.'); return; }
+  document.querySelectorAll('[id^="col-sw-"]').forEach(s=>s.classList.remove('selected'));
+  selectedHex = h; selectedName = 'Custom #'+h;
+  updateSelBar();
+}
+
+// ═══════════════════════════════════════════════════
+//  PATTERN
+// ═══════════════════════════════════════════════════
+function selPattern(p) {
+  selPattern_ = p;
+  document.querySelectorAll('.pat-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById('pat-'+p).classList.add('active');
+  updateComboBar();
+  addLog('info','Pattern: '+cap(p));
+}
+
+// ═══════════════════════════════════════════════════
+//  MODES
+// ═══════════════════════════════════════════════════
+function switchMode(name, btn) {
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('mode-'+name).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+//  INPUT ROWS
+// ═══════════════════════════════════════════════════
+function addRow(num='') {
+  const list=document.getElementById('inputList'),id=++rowCtr,idx=list.children.length+1;
+  const row=document.createElement('div');row.className='input-row';row.id='row-'+id;
+  row.innerHTML=`<div class="row-num">${idx}</div><input type="number" min="1" placeholder="Input #" value="${num}" oninput="updCounts()"><button class="btn btn-danger btn-xs" onclick="delRow(${id})">✕</button>`;
+  list.appendChild(row);updCounts();
+}
+function delRow(id){document.getElementById('row-'+id)?.remove();document.querySelectorAll('.input-row').forEach((r,i)=>r.querySelector('.row-num').textContent=i+1);updCounts();}
+function clearRows(){document.getElementById('inputList').innerHTML='';rowCtr=0;updCounts();}
+function addRange(){
+  const v=document.getElementById('rangeInput').value.trim();if(!v)return;
+  parseRange(v).forEach(n=>addRow(n));document.getElementById('rangeInput').value='';
+}
+function parseRange(str){
+  const nums=[];
+  str.split(',').forEach(p=>{p=p.trim();if(p.includes('-')){const[a,b]=p.split('-').map(Number);for(let i=a;i<=b;i++)nums.push(i);}else if(!isNaN(p)&&p!=='')nums.push(Number(p));});
+  return [...new Set(nums)].sort((a,b)=>a-b);
+}
+function getNums(){return[...document.querySelectorAll('.input-row input[type="number"]')].map(i=>parseInt(i.value)).filter(n=>!isNaN(n)&&n>0);}
+function updCounts(){
+  const n=getNums().length;
+  const el=document.getElementById('cCount'); if(el) el.textContent=n;
+  const el2=document.getElementById('cCountImg'); if(el2) el2.textContent=n;
+}
+
+// ═══════════════════════════════════════════════════
+//  CONNECTION
+// ═══════════════════════════════════════════════════
+async function testConn(){
+  const url=`http://${document.getElementById('vmixHost').value}:${document.getElementById('vmixPort').value}/api`;
+  addLog('info','Testing '+url+'…');
+  try{const res=await fetch(url,{signal:AbortSignal.timeout(3000)});if(res.ok){setDot('ok','Connected');addLog('ok','vMix reachable.');}else{setDot('err','HTTP '+res.status);addLog('err','HTTP '+res.status);}}
+  catch(e){setDot('err','Unreachable');addLog('err','Cannot reach vMix. Enable Web Controller in Settings.');}
+}
+function setDot(s,t){document.getElementById('dot').className='dot'+(s==='ok'?' ok':s==='err'?' err':'');document.getElementById('statusTxt').textContent=t;}
+
+// ═══════════════════════════════════════════════════
+//  URL BUILDER
+// ═══════════════════════════════════════════════════
+function mkUrl(inputN, layerName, hex) {
+  const h=document.getElementById('vmixHost').value, p=document.getElementById('vmixPort').value;
+  const fn = colorTarget === 'fill' ? 'SetColor' : 'SetTextColour';
+  const val = `%23${hex}`;
+  return `http://${h}:${p}/api?Function=${fn}&Input=${inputN}&SelectedName=${encodeURIComponent(layerName)}&Value=${val}`;
+}
+
+function showPreview(){
+  if(!selectedHex){addLog('err','No color selected.');return;}
+  if(!selLayerName){addLog('err','No layer selected.');return;}
+  const nums=getNums();if(!nums.length){addLog('err','No inputs added.');return;}
+  const url=mkUrl(nums[0],selLayerName,selectedHex);
+  const colored=url.replace(/(Function=)([^&]+)/,'$1<em>$2</em>').replace(/(Input=)([^&]+)/,'$1<em>$2</em>').replace(/(SelectedName=)([^&]+)/,'$1<em>$2</em>').replace(/(Value=)([^&]+)/,'$1<em>$2</em>');
+  document.getElementById('prevNum').textContent=nums[0];
+  document.getElementById('prevUrl').innerHTML=colored;
+  document.getElementById('prevBox').classList.add('visible');
+  addLog('info','Preview (input '+nums[0]+'): '+url);
+}
+
+// ═══════════════════════════════════════════════════
+//  APPLY COLORS
+// ═══════════════════════════════════════════════════
+async function applyColors(){
+  if(!selectedHex){addLog('err','No color selected.');return;}
+  if(!selLayerName){addLog('err','No layer selected.');return;}
+  const nums=getNums();if(!nums.length){addLog('err','No inputs added.');return;}
+  const btn=document.getElementById('applyBtn');btn.disabled=true;
+  const pgW=document.getElementById('pgC'),pgF=document.getElementById('pfC');pgW.style.display='block';
+  addLog('info',`Applying ${selectedName} (#${selectedHex}) → "${selLayerName}" on ${nums.length} input(s)…`);
+  let ok=0,fail=0;
+  for(let i=0;i<nums.length;i++){
+    pgF.style.width=(i/nums.length*100)+'%';const n=nums[i];
+    try{
+      const res=await fetch(mkUrl(n,selLayerName,selectedHex),{signal:AbortSignal.timeout(3000)});
+      if(res.ok){addLog('ok',`Input ${n}: ✓`);ok++;}else{addLog('err',`Input ${n}: HTTP ${res.status}`);fail++;}
+    }catch(e){addLog('err',`Input ${n}: ${e.message}`);fail++;}
+  }
+  pgF.style.width='100%';
+  setTimeout(()=>{pgW.style.display='none';pgF.style.width='0%';},1100);
+  addLog('info',`Done — ${ok} ok, ${fail} failed.`);
+  btn.disabled=false;
+}
+
+// ═══════════════════════════════════════════════════
+//  DROPBOX — permanent token, saved in localStorage
+// ═══════════════════════════════════════════════════
+const DB_SHARED_LINK = 'https://www.dropbox.com/scl/fo/6gg79huvx6mifb58ofqoh/AAgFVktruaDniDlSz6dBA3c?rlkey=d7090mpfq08pm8kcy92r78ji0&st=tcajwh5n&dl=0';
+const DB_DEFAULT_FOLDER = '/RE-BRAND/VMIX RE-BRAND/TEMPLATES/V-SET 2023 IDEAS/HOF L3s/LOOP COLORS';
+
+let dbToken = localStorage.getItem('db_token') || null;
+let dbEntries = [];
+
+async function dbConnectGist() {
+  const gistId = document.getElementById('dbGistId').value.trim();
+  if (!gistId) { addLog('err','Enter your Gist ID first.'); return; }
+  localStorage.setItem('db_gist_id', gistId);
+  const btn = document.getElementById('gistConnectBtn');
+  btn.disabled = true; btn.textContent = 'Fetching…';
+  addLog('info', 'Fetching token from GitHub Gist…');
+  const token = await fetchTokenFromGist(gistId);
+  btn.disabled = false; btn.innerHTML = 'Fetch &amp; Connect';
+  if (!token) return;
+  dbToken = token;
+  localStorage.setItem('db_token', token);
+  await dbOnConnected();
+}
+
+async function fetchTokenFromGist(gistIdOrUrl) {
+  try {
+    // Accept full URL or raw ID
+    const gistId = gistIdOrUrl.includes('gist.github.com')
+      ? gistIdOrUrl.split('/').filter(Boolean).pop()
+      : gistIdOrUrl;
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — check the Gist ID is correct and the Gist is not deleted.');
+    const data = await res.json();
+    // Find token.txt or first file
+    const files = data.files || {};
+    const file = files['token.txt'] || Object.values(files)[0];
+    if (!file) throw new Error('No files found in Gist.');
+    const token = (file.content || '').trim();
+    if (!token) throw new Error('Gist file is empty.');
+    addLog('ok', 'Token fetched from Gist.');
+    return token;
+  } catch(e) {
+    addLog('err', 'Gist fetch failed: ' + e.message);
+    return null;
+  }
+}
+
+function toggleTokenVis() {
+  const inp = document.getElementById('dbTokenInput');
+  const btn = document.getElementById('tokenVisBtn');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+async function copyToken() {
+  const t = localStorage.getItem('db_token') || document.getElementById('dbTokenInput').value.trim();
+  if (!t) { addLog('err','No token to copy.'); return; }
+  try {
+    await navigator.clipboard.writeText(t);
+    const btn = document.getElementById('copyTokenBtn');
+    btn.innerHTML = '✓'; btn.style.color = 'var(--success)';
+    setTimeout(()=>{ btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; btn.style.color=''; }, 1500);
+    addLog('ok','Token copied to clipboard.');
+  } catch(e) { addLog('err','Copy failed — select and copy manually.'); }
+}
+
+async function dbConnect() {
+  const t = document.getElementById('dbTokenInput').value.trim();
+  if (!t) { addLog('err','Paste your Dropbox access token first.'); return; }
+  dbToken = t;
+  localStorage.setItem('db_token', t);
+  addLog('info','Token saved. Connecting…');
+  await dbOnConnected();
+}
+
+async function dbOnConnected() {
+  // Verify token + get account name
+  try {
+    const res = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+      method: 'POST', headers: { 'Authorization':'Bearer '+dbToken }
+    });
+    if (res.status === 401) throw new Error('Invalid token — check it was copied correctly and has not been revoked.');
+    const data = await res.json();
+    document.getElementById('dbAccountName').textContent = '✓ ' + (data.name?.display_name || 'Connected');
+  } catch(e) {
+    addLog('err', e.message);
+    dbToken = null; localStorage.removeItem('db_token'); return;
+  }
+  document.getElementById('dbNotConnected').style.display = 'none';
+  document.getElementById('dbConnected').style.display = 'block';
+  // Restore saved folder path, or use default
+  const savedPath = localStorage.getItem('db_folder_path') || DB_DEFAULT_FOLDER;
+  document.getElementById('dbFolderPathInput').value = savedPath;
+  addLog('ok', 'Dropbox connected!');
+  await dbListFolder();
+}
+
+async function dbListFolder(pathOverride) {
+  document.getElementById('dbLoading').style.display = 'block';
+  document.getElementById('dbError').style.display = 'none';
+  document.getElementById('dbFileArea').style.display = 'none';
+
+  // Use override (from clicking a folder) or the input field
+  let folderPath = pathOverride !== undefined ? pathOverride : (document.getElementById('dbFolderPathInput').value.trim() || '');
+  const apiPath = folderPath === '' ? '' : (folderPath.startsWith('/') ? folderPath : '/' + folderPath);
+
+  // Update input to reflect current path
+  document.getElementById('dbFolderPathInput').value = folderPath;
+
+  try {
+    const res = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+      method: 'POST',
+      headers: { 'Authorization':'Bearer '+dbToken, 'Content-Type':'application/json' },
+      body: JSON.stringify({ path: apiPath, recursive: false })
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error('Bad response: ' + text.slice(0,120)); }
+    if (!res.ok) throw new Error(data.error_summary || JSON.stringify(data));
+
+    // Separate folders and files, sort folders first
+    dbEntries = data.entries.map(e => ({
+      name: e.name,
+      size: e.size || 0,
+      path: e.path_display || e.path_lower,  // use display path for correct casing
+      isDir: e['.tag'] === 'folder'
+    }));
+    dbEntries.sort((a,b) => (a.isDir === b.isDir ? a.name.localeCompare(b.name) : a.isDir ? -1 : 1));
+    dbFiles = dbEntries.filter(e => !e.isDir);
+
+    localStorage.setItem('db_folder_path', folderPath);
+    renderDbEntries(apiPath);
+    document.getElementById('dbFileArea').style.display = 'block';
+    const fCount = dbEntries.filter(e=>e.isDir).length;
+    const fileCount = dbFiles.length;
+    addLog('ok', `${fCount} folder(s), ${fileCount} file(s) in "${apiPath || 'root'}".`);
+  } catch(e) {
+    showDbErr('Could not list folder: ' + e.message);
+    addLog('err', 'Dropbox list error: ' + e.message);
+  }
+  document.getElementById('dbLoading').style.display = 'none';
+}
+
+function renderDbEntries(currentPath) {
+  const grid = document.getElementById('dbFileGrid');
+  grid.innerHTML = '';
+  const total = dbEntries.length;
+  document.getElementById('dbFileCount').textContent = total;
+
+  if (!total) { grid.innerHTML='<div style="font-size:0.72rem;color:var(--text3);padding:8px">Empty folder.</div>'; return; }
+
+  // Back button if not at root
+  if (currentPath && currentPath !== '') {
+    const parts = currentPath.split('/').filter(Boolean);
+    parts.pop();
+    const parentPath = parts.length ? '/' + parts.join('/') : '';
+    const back = document.createElement('div');
+    back.className = 'db-file-card db-folder-card';
+    back.style.cssText = 'background:var(--s2);border-color:var(--border2)';
+    back.innerHTML = `<div class="db-file-icon">⬆</div><div class="db-file-name">.. Up</div><div class="db-file-size">back</div>`;
+    back.onclick = () => dbListFolder(parentPath);
+    grid.appendChild(back);
+  }
+
+  dbEntries.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'db-file-card' + (f.isDir ? ' db-folder-card' : '');
+    card.dataset.path = f.path;
+    card.dataset.name = f.name;
+    card.dataset.isdir = f.isDir ? '1' : '0';
+
+    if (f.isDir) {
+      card.innerHTML = `<div class="db-file-icon">📁</div><div class="db-file-name">${f.name}</div><div class="db-file-size">folder</div>`;
+      // Single click = navigate, checkbox area = select for download
+      card.onclick = (e) => {
+        if (e.target.closest('.db-sel-btn')) return;
+        dbListFolder(f.path);
+      };
+      // Add a small select toggle button
+      const selBtn = document.createElement('button');
+      selBtn.className = 'db-sel-btn btn btn-outline btn-xs';
+      selBtn.style.cssText = 'position:absolute;bottom:4px;right:4px;font-size:0.55rem;padding:2px 5px';
+      selBtn.textContent = '＋';
+      selBtn.title = 'Select folder for download';
+      selBtn.onclick = async (e) => {
+        e.stopPropagation();
+        card.classList.toggle('selected');
+        selBtn.textContent = card.classList.contains('selected') ? '✓' : '＋';
+        await syncDbUrls();
+      };
+      card.style.position = 'relative';
+      card.appendChild(selBtn);
+    } else {
+      card.innerHTML = `<div class="db-file-icon">🎞</div><div class="db-file-name">${f.name}</div><div class="db-file-size">${fmtBytes(f.size)}</div>`;
+      card.onclick = async () => { card.classList.toggle('selected'); await syncDbUrls(); };
+    }
+    grid.appendChild(card);
+  });
+}
+
+async function getAllFilesInFolder(folderPath) {
+  const res = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+    method: 'POST',
+    headers: { 'Authorization':'Bearer '+dbToken, 'Content-Type':'application/json' },
+    body: JSON.stringify({ path: folderPath, recursive: true })
+  });
+  const text = await res.text();
+  let data; try { data=JSON.parse(text); } catch(e) { throw new Error('Bad response: '+text.slice(0,80)); }
+  if (!res.ok) throw new Error(data.error_summary || 'list error');
+  let files = data.entries
+    .filter(e => e['.tag'] === 'file')
+    .map(e => ({ name: e.name, path: e.path_display || e.path_lower }));
+  let cursor = data.cursor, hasMore = data.has_more;
+  while (hasMore) {
+    const r2 = await fetch('https://api.dropboxapi.com/2/files/list_folder/continue', {
+      method:'POST', headers:{'Authorization':'Bearer '+dbToken,'Content-Type':'application/json'},
+      body: JSON.stringify({ cursor })
+    });
+    const d2 = await r2.json();
+    files = files.concat(d2.entries.filter(e=>e['.tag']==='file').map(e=>({name:e.name,path:e.path_display||e.path_lower})));
+    cursor = d2.cursor; hasMore = d2.has_more;
+  }
+  return files;
+}
+
+async function syncDbUrls() {
+  const selected = [...document.querySelectorAll('.db-file-card.selected')];
+  if (!selected.length) { document.getElementById('dropboxUrls').value=''; return; }
+
+  addLog('info', `Getting download links for ${selected.length} selected item(s)…`);
+  const urls = [];
+
+  for (const card of selected) {
+    const isDir = card.dataset.isdir === '1';
+    if (isDir) {
+      // Get all files inside the folder
+      try {
+        addLog('info', `Expanding folder: ${card.dataset.name}…`);
+        const files = await getAllFilesInFolder(card.dataset.path);
+        addLog('info', `  → ${files.length} file(s) found`);
+        for (const f of files) {
+          const r = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+            method:'POST', headers:{'Authorization':'Bearer '+dbToken,'Content-Type':'application/json'},
+            body: JSON.stringify({ path: f.path })
+          });
+          const d = await r.json();
+          if (d.link) urls.push(d.link);
+        }
+      } catch(e) { addLog('err','Folder expand error: '+e.message); }
+    } else {
+      try {
+        const res = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+          method:'POST', headers:{'Authorization':'Bearer '+dbToken,'Content-Type':'application/json'},
+          body: JSON.stringify({ path: card.dataset.path })
+        });
+        const data = await res.json();
+        if (data.link) urls.push(data.link);
+        else throw new Error(data.error_summary || 'no link');
+      } catch(e) { addLog('err','Link error for '+card.dataset.name+': '+e.message); }
+    }
+  }
+
+  document.getElementById('dropboxUrls').value = urls.join('\n');
+  if (urls.length) addLog('info', `${urls.length} file(s) queued for download.`);
+}
+
+function showDbErr(msg) {
+  const el = document.getElementById('dbError');
+  el.textContent = '⚠ ' + msg; el.style.display = 'block';
+}
+
+async function dbRefresh() { await dbListFolder(); }
+
+function dbDisconnect() {
+  dbToken = null;
+  localStorage.removeItem('db_token');
+  document.getElementById('dbConnected').style.display = 'none';
+  document.getElementById('dbNotConnected').style.display = 'block';
+  document.getElementById('dbTokenInput').value = '';
+  addLog('info', 'Dropbox disconnected.');
+}
+
+function selectAllDb() {
+  // Only auto-select files, not folders (folders require intentional ＋ click)
+  document.querySelectorAll('.db-file-card:not(.db-folder-card)').forEach(c => c.classList.add('selected'));
+  syncDbUrls();
+}
+function clearSelDb() {
+  document.querySelectorAll('.db-file-card').forEach(c => {
+    c.classList.remove('selected');
+    const btn = c.querySelector('.db-sel-btn');
+    if (btn) btn.textContent = '＋';
+  });
+  document.getElementById('dropboxUrls').value = '';
+}
+async function dbRefresh() {
+  const current = document.getElementById('dbFolderPathInput').value.trim();
+  await dbListFolder(current || '');
+}
+
+// Auto-connect on load if token is saved
+async function dbAutoConnect() {
+  // Restore Gist ID field if saved
+  const savedGistId = localStorage.getItem('db_gist_id') || 'https://gist.github.com/mronis86/83a619caa7c27e064c7c769653c34c11';
+  if (savedGistId) document.getElementById('dbGistId').value = savedGistId;
+
+  // If we have a saved Gist ID, always re-fetch the token (picks up any updates)
+  if (savedGistId) {
+    addLog('info', 'Auto-fetching token from Gist…');
+    const freshToken = await fetchTokenFromGist(savedGistId);
+    if (freshToken) {
+      dbToken = freshToken;
+      localStorage.setItem('db_token', freshToken);
+      await dbOnConnected();
+      return;
+    }
+    // Fall through to cached token if Gist fetch fails
+  }
+
+  // Fall back to cached token
+  if (!dbToken) return;
+  addLog('info', 'Restoring Dropbox connection from saved token…');
+  document.getElementById('dbTokenInput').value = dbToken;
+  await dbOnConnected();
+}
+
+// ═══════════════════════════════════════════════════
+//  LOCAL FOLDER + DOWNLOAD
+// ═══════════════════════════════════════════════════
+// ── Local file browser state ──
+let localNavStack = []; // [{name, handle}] — navigation breadcrumb stack
+let vmixFolderHandle = null;
+
+function getCurrentHandle(){
+  const base = vmixFolderHandle || folderHandle;
+  return localNavStack.length ? localNavStack[localNavStack.length-1].handle : base;
+}
+
+function updateBreadcrumb(){
+  const base = vmixFolderHandle || folderHandle;
+  const root = base ? base.name : 'Root';
+  const parts = [root, ...localNavStack.map(s=>s.name)];
+  document.getElementById('localBreadcrumb').textContent = parts.join(' › ');
+}
+
+async function selectFolder(){
+  if(!('showDirectoryPicker' in window)){addLog('err','Requires Chrome or Edge.');return;}
+  try{
+    folderHandle = await window.showDirectoryPicker({mode:'readwrite'});
+    document.getElementById('folderPath').textContent = folderHandle.name;
+    document.getElementById('folderPath').classList.add('set');
+    addLog('ok','Download folder: '+folderHandle.name);
+  }catch(e){if(e.name!=='AbortError')addLog('err',e.message);}
+}
+
+async function selectVmixFolder(){
+  if(!('showDirectoryPicker' in window)){addLog('err','Requires Chrome or Edge.');return;}
+  try{
+    vmixFolderHandle = await window.showDirectoryPicker({mode:'readwrite'});
+    document.getElementById('vmixFolderPath').textContent = vmixFolderHandle.name;
+    document.getElementById('vmixFolderPath').classList.add('set');
+    localNavStack = [];
+    addLog('ok','vMix folder: '+vmixFolderHandle.name);
+
+    // Prompt for full path — reuse saved if same folder name
+    const savedPath = localStorage.getItem('local_base_path') || '';
+    const savedName = localStorage.getItem('local_base_folder_name') || '';
+    if(!savedPath || savedName !== vmixFolderHandle.name){
+      const msg = `📁 Folder: "${vmixFolderHandle.name}"\n\nTo build full file paths for vMix, paste its full Windows path below.\n\nHow:\n1. Open this folder in Windows Explorer\n2. Click the address bar at the top\n3. Copy the path and paste it here`;
+      const entered = prompt(msg, savedPath || vmixFolderHandle.name);
+      if(entered && entered.trim()){
+        localBasePath = entered.trim().replace(/[\/\\]+$/,'');
+        localStorage.setItem('local_base_path', localBasePath);
+        localStorage.setItem('local_base_folder_name', vmixFolderHandle.name);
+        const disp = document.getElementById('basePathDisplay');
+        disp.textContent = '📂 ' + localBasePath;
+        disp.style.display = 'block';
+        addLog('ok','vMix base path: '+localBasePath);
+      }
+    } else {
+      localBasePath = savedPath;
+      const disp = document.getElementById('basePathDisplay');
+      disp.textContent = '📂 ' + localBasePath;
+      disp.style.display = 'block';
+    }
+
+    await scanFolder();
+  }catch(e){if(e.name!=='AbortError')addLog('err',e.message);}
+}
+
+async function scanFolder(){
+  if(!folderHandle){addLog('err','Select a folder first.');return;}
+  const handle = getCurrentHandle();
+  updateBreadcrumb();
+  const listEl=document.getElementById('fileListEl');
+  const wrapEl=document.getElementById('existingFiles');
+  listEl.innerHTML='';
+  wrapEl.style.display='block';
+
+  // Collect all entries
+  const dirs=[], files=[];
+  for await(const[name,h] of handle.entries()){
+    if(h.kind==='directory') dirs.push({name,handle:h});
+    else files.push({name,handle:h});
+  }
+
+  // Sort dirs alphabetically, sort files as image sequence (natural sort → lowest frame first)
+  dirs.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  files.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
+
+  // Back button
+  if(localNavStack.length>0){
+    const back=document.createElement('div');
+    back.className='file-item';
+    back.style.cssText='cursor:pointer;background:var(--s2);border-bottom:1px solid var(--border)';
+    back.innerHTML=`<span class="file-name" style="color:var(--text3)">⬆ .. back</span>`;
+    back.onclick=async()=>{ localNavStack.pop(); await scanFolder(); };
+    listEl.appendChild(back);
+  }
+
+  // Folders
+  for(const d of dirs){
+    const row=document.createElement('div');
+    row.className='file-item';
+    row.style.cssText='cursor:pointer;align-items:center';
+    row.innerHTML=`
+      <input type="checkbox" class="local-chk" data-name="${d.name}" data-isdir="1" style="margin-right:6px;flex-shrink:0" onclick="event.stopPropagation();updateDeleteBtn()">
+      <span class="file-name" style="color:var(--warn);font-weight:600">📁 ${d.name}</span>
+      <span class="file-sz" style="color:var(--text3);font-size:0.6rem">folder</span>
+      <button class="btn btn-danger btn-xs" style="margin-left:6px;padding:1px 6px;font-size:0.6rem" onclick="event.stopPropagation();deleteSingle('${d.name}',true)" title="Delete folder">🗑</button>`;
+    // Click row body (not checkbox/delete) → navigate in
+    row.onclick=(e)=>{ if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return; navigateInto(d.name,d.handle); };
+    listEl.appendChild(row);
+  }
+
+  // Files
+  for(const f of files){
+    const fileObj=await f.handle.getFile();
+    const row=document.createElement('div');
+    row.className='file-item local-file-row';
+    row.style.cssText='cursor:pointer;align-items:center';
+    row.dataset.name=f.name;
+    row.innerHTML=`
+      <input type="checkbox" class="local-chk" data-name="${f.name}" data-isdir="0" style="margin-right:6px;flex-shrink:0" onclick="event.stopPropagation();updateDeleteBtn()">
+      <span class="file-name">${f.name}</span>
+      <span class="file-sz">${fmtBytes(fileObj.size)}</span>
+      <button class="btn btn-danger btn-xs" style="margin-left:6px;padding:1px 6px;font-size:0.6rem" onclick="event.stopPropagation();deleteSingle('${f.name}',false)" title="Delete">🗑</button>`;
+    row.onclick=(e)=>{ if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return; setImgSource(f.name); };
+    listEl.appendChild(row);
+  }
+
+  if(!dirs.length&&!files.length){
+    listEl.innerHTML='<div class="file-item" style="color:var(--text3)">Empty folder</div>';
+  }
+
+  updateDeleteBtn();
+  addLog('info',`${dirs.length} folder(s), ${files.length} file(s) — ${document.getElementById('localBreadcrumb').textContent}`);
+}
+
+async function navigateInto(name, handle){
+  localNavStack.push({name, handle});
+  await scanFolder();
+}
+
+function updateDeleteBtn(){
+  const any=[...document.querySelectorAll('.local-chk:checked')].length>0;
+  const btn=document.getElementById('deleteSelBtn');
+  if(btn) btn.style.display=any?'inline-flex':'none';
+}
+
+async function deleteSingle(name, isDir){
+  if(!confirm(`Delete "${name}"?`)) return;
+  const handle=getCurrentHandle();
+  try{
+    await handle.removeEntry(name,{recursive:isDir});
+    addLog('ok','Deleted: '+name);
+    await scanFolder();
+  }catch(e){ addLog('err','Delete failed: '+e.message); }
+}
+
+async function deleteSelected(){
+  const checked=[...document.querySelectorAll('.local-chk:checked')];
+  if(!checked.length) return;
+  const names=checked.map(c=>c.dataset.name);
+  if(!confirm(`Delete ${names.length} item(s)?`)) return;
+  const handle=getCurrentHandle();
+  let ok=0;
+  for(const c of checked){
+    try{
+      await handle.removeEntry(c.dataset.name,{recursive:c.dataset.isdir==='1'});
+      ok++;
+    }catch(e){ addLog('err','Delete failed: '+c.dataset.name+' — '+e.message); }
+  }
+  addLog('ok',`Deleted ${ok} item(s).`);
+  await scanFolder();
+}
+
+async function clearFolder(){
+  if(!folderHandle||!confirm('Delete ALL contents of "'+folderHandle.name+'"?')) return;
+  let del=0;
+  for await(const[name] of folderHandle.entries()){
+    try{await folderHandle.removeEntry(name,{recursive:true});del++;}catch(e){}
+  }
+  localNavStack=[];
+  addLog('info','Cleared '+del+' item(s).');
+  await scanFolder();
+}
+
+let localBasePath = localStorage.getItem('local_base_path') || '';
+
+function onBasePathChange(){
+  localBasePath = document.getElementById('localBasePath').value.trim();
+  localStorage.setItem('local_base_path', localBasePath);
+  // Refresh the source display if a file is already selected
+  const cur = document.getElementById('imgFilePath').value;
+  if(cur) {
+    const full = buildFullPath(cur.split(/[\\/]/).pop());
+    document.getElementById('imgFilePath').value = full;
+    document.getElementById('imgSourceLabel').textContent = full;
+    document.getElementById('imgValuePreview').textContent = full;
+  }
+}
+
+function getBasePath(){
+  return localBasePath.replace(/[\/\\]+$/,'');
+}
+
+function buildFullPath(relativeNameOrPath){
+  const base = getBasePath();
+  if(!base) return relativeNameOrPath;
+  // Build subpath from nav stack + filename
+  const subParts = localNavStack.map(s=>s.name);
+  const namePart = relativeNameOrPath.split(/[\\/]/).pop();
+  const sep = base.includes('/') ? '/' : '\\';
+  const parts = [base, ...subParts, namePart].filter(Boolean);
+  return parts.join(sep);
+}
+
+// ── Image source selection for Step 6 ──
+function setImgSource(fileName){
+  const fullPath = buildFullPath(fileName);
+  document.getElementById('imgFilePath').value = fullPath;
+  document.getElementById('imgSourceLabel').textContent = fullPath;
+  document.getElementById('imgValuePreview').textContent = fullPath;
+  document.getElementById('imgSourceDisplay').style.borderColor='var(--accent)';
+  document.getElementById('imgSourceDisplay').style.background='rgba(49,130,206,0.08)';
+  document.getElementById('imgSourceDisplay').style.borderStyle='solid';
+  document.getElementById('imgSourceDisplay').style.boxShadow='0 0 0 3px rgba(49,130,206,0.15)';
+  document.querySelectorAll('.local-file-row').forEach(r=>r.classList.remove('selected-source'));
+  const match=[...document.querySelectorAll('.local-file-row')].find(r=>r.dataset.name===fileName);
+  if(match) match.classList.add('selected-source');
+  addLog('info','Image source set: '+fullPath);
+}
+
+function clearImgSource(){
+  document.getElementById('imgFilePath').value='';
+  document.getElementById('imgSourceLabel').textContent='— click a file in the folder browser above —';
+  document.getElementById('imgValuePreview').textContent='—';
+  document.getElementById('imgSourceDisplay').style.borderColor='var(--border2)';
+  document.getElementById('imgSourceDisplay').style.background='var(--s2)';
+}
+
+async function startDownload(){
+  if(!folderHandle){addLog('err','Select a destination folder first.');return;}
+
+  // Build queue from selected Dropbox cards (preferred) or URL textarea fallback
+  let queue=[];
+  const selectedCards=[...document.querySelectorAll('.db-file-card.selected')];
+
+  if(selectedCards.length>0 && dbToken){
+    addLog('info',`Building queue from ${selectedCards.length} selected Dropbox item(s)…`);
+    for(const card of selectedCards){
+      const isDir=card.dataset.isdir==='1';
+      if(isDir){
+        try{
+          const files=await getAllFilesInFolder(card.dataset.path);
+          const basePath = card.dataset.path;
+          const folderName = card.dataset.name;
+          for(const f of files){
+            // Slice off base path prefix (case-safe using length), keep folder name as root
+            const rel = f.path.slice(basePath.length).replace(/^\//,'');
+            queue.push({dbPath:f.path, name:f.name, subpath: folderName + (rel ? '/'+rel : '')});
+          }
+          addLog('info',`"${card.dataset.name}": ${files.length} file(s) queued.`);
+        }catch(e){addLog('err','Folder expand error: '+e.message);}
+      } else {
+        queue.push({dbPath:card.dataset.path, name:card.dataset.name, subpath:card.dataset.name});
+      }
+    }
+  } else {
+    const rawUrls=document.getElementById('dropboxUrls').value.trim();
+    if(!rawUrls){addLog('err','No items selected and no URLs in queue.');return;}
+    rawUrls.split('\n').map(s=>s.trim()).filter(Boolean).forEach((url,i)=>{
+      let fname;try{fname=decodeURIComponent(new URL(url).pathname.split('/').pop())||'file_'+(i+1);}catch{fname='file_'+(i+1);}
+      queue.push({url,name:fname,subpath:fname});
+    });
+  }
+
+  if(!queue.length){addLog('err','Nothing to download.');return;}
+
+  const btn=document.getElementById('dlBtn');btn.disabled=true;
+  const prog=document.getElementById('dlProgress');prog.innerHTML='';prog.classList.add('visible');
+  const pgW=document.getElementById('pgDl'),pgF=document.getElementById('pfDl');pgW.style.display='block';
+  addLog('info',`Downloading ${queue.length} file(s) → "${folderHandle.name}"…`);
+
+  // Group queue into display buckets: one row per top-level folder, one row for loose files
+  // bucket key = top-level folder name or '' for root files
+  const buckets = new Map(); // key → {label, items:[]}
+  for(const item of queue){
+    const parts = item.subpath.split('/').filter(Boolean);
+    const key = parts.length > 1 ? parts[0] : '';
+    if(!buckets.has(key)) buckets.set(key, {label: key || 'Files', items:[]});
+    buckets.get(key).items.push(item);
+  }
+
+  // Render one progress row per bucket
+  const bucketEls = new Map();
+  for(const [key, bucket] of buckets){
+    const row=document.createElement('div');row.className='dl-item';
+    const barId='dlb-'+key.replace(/\s/g,'_');
+    const stId='dls-'+key.replace(/\s/g,'_');
+    row.innerHTML=`<span class="dl-fname">${bucket.label} <span style="color:var(--text3);font-size:0.6rem">(${bucket.items.length} files)</span></span><div class="dl-bar-wrap"><div class="dl-bar" id="${barId}"></div></div><span class="dl-st" id="${stId}">…</span>`;
+    prog.appendChild(row);
+    bucketEls.set(key,{barId,stId,total:bucket.items.length,done:0,fail:0});
+  }
+
+  let totalOk=0,totalFail=0;
+  let globalIdx=0;
+
+  for(const [key, bucket] of buckets){
+    const el=bucketEls.get(key);
+    for(const item of bucket.items){
+      globalIdx++;
+      pgF.style.width=(globalIdx/queue.length*100)+'%';
+
+      // Get temp link
+      let url=item.url||'';
+      if(!url && item.dbPath){
+        try{
+          const r=await fetch('https://api.dropboxapi.com/2/files/get_temporary_link',{
+            method:'POST',headers:{'Authorization':'Bearer '+dbToken,'Content-Type':'application/json'},
+            body:JSON.stringify({path:item.dbPath})
+          });
+          const d=await r.json();
+          if(d.link) url=d.link; else throw new Error(d.error_summary||'no link');
+        }catch(e){addLog('err','Link error for '+item.name+': '+e.message);el.fail++;totalFail++;continue;}
+      }
+
+      try{
+        const res=await fetch(url);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const reader=res.body.getReader(),total=parseInt(res.headers.get('Content-Length')||'0');
+        const chunks=[];let recv=0;
+        while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);recv+=value.length;}
+
+        // Create subfolders as needed
+        const parts=item.subpath.split('/').filter(Boolean);
+        const fname=parts.pop();
+        let targetHandle=folderHandle;
+        for(const part of parts) targetHandle=await targetHandle.getDirectoryHandle(part,{create:true});
+
+        const arr=await new Blob(chunks).arrayBuffer();
+        const fh=await targetHandle.getFileHandle(fname,{create:true}),ws=await fh.createWritable();
+        await ws.write(arr);await ws.close();
+
+        el.done++;totalOk++;
+      }catch(e){
+        addLog('err','Failed: '+item.name+' — '+e.message);
+        el.fail++;totalFail++;
+      }
+
+      // Update this bucket's progress bar
+      const pct=(el.done+el.fail)/el.total*100;
+      const barEl=document.getElementById(el.barId);
+      if(barEl){ barEl.style.width=pct+'%'; if(el.fail>0) barEl.style.background='var(--danger)'; }
+    }
+
+    // Mark bucket done
+    const stEl=document.getElementById(el.stId);
+    if(stEl){
+      if(el.fail===0){ stEl.textContent='✓ '+el.done; stEl.classList.add('ok'); }
+      else{ stEl.textContent=el.done+'✓ '+el.fail+'✗'; stEl.classList.add('err'); }
+    }
+    addLog(el.fail?'err':'ok', `${bucket.label}: ${el.done} saved, ${el.fail} failed.`);
+  }
+
+  pgF.style.width='100%';
+  setTimeout(()=>{pgW.style.display='none';pgF.style.width='0%';},1200);
+  addLog('info',`Complete — ${totalOk} saved, ${totalFail} failed.`);
+  btn.disabled=false;
+  await scanFolder();
+}
+
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+function sanitizeHex(v){return v.trim().toUpperCase().replace(/[^0-9A-F]/g,'');}
+function hexToRgb(h){return `${parseInt(h.slice(0,2),16)} ${parseInt(h.slice(2,4),16)} ${parseInt(h.slice(4,6),16)}`;}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function fmtBytes(n){if(n<1024)return n+'B';if(n<1048576)return(n/1024).toFixed(1)+'KB';return(n/1048576).toFixed(1)+'MB';}
+function addLog(type,msg){
+  const box=document.getElementById('logBox'),t=new Date().toTimeString().slice(0,8);
+  const cls=type==='ok'?'lok':type==='err'?'ler':type==='lw'?'lw':'lin';
+  const d=document.createElement('div');d.className='ll';
+  d.innerHTML=`<span class="lt">${t}</span><span class="${cls}">${msg}</span>`;
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+function clearLog(){document.getElementById('logBox').innerHTML='';}
+
+// ═══════════════════════════════════════════════════
+//  APPLY IMAGE
+// ═══════════════════════════════════════════════════
+let selectedImageLayer = 'Image1.Source';
+
+function selImageLayer(layerName, btn) {
+  selectedImageLayer = layerName;
+  document.querySelectorAll('[id^="img-layer-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('imgLayerLabel').textContent = layerName;
+  const val = document.getElementById('imgFilePath').value;
+  if(val) document.getElementById('imgValuePreview').textContent = val;
+}
+
+async function pickImageFile() {
+  // Use File System Access API to pick a file and get its path hint
+  if (!('showOpenFilePicker' in window)) {
+    addLog('err','File picker requires Chrome or Edge. Enter the path manually.');
+    return;
+  }
+  try {
+    const [fh] = await window.showOpenFilePicker({
+      types: [{ description:'Video/Image files', accept:{'video/*':['.mp4','.mov','.avi','.webm'],'image/*':['.png','.jpg','.jpeg','.gif','.bmp']} }]
+    });
+    // Note: browser security means we can't get the full OS path — show the filename at minimum
+    const file = await fh.getFile();
+    document.getElementById('imgFilePath').value = file.name;
+    addLog('info', `Selected: ${file.name} — paste the full local path for vMix (e.g. C:\\Loops\\${file.name})`);
+  } catch(e) { if (e.name !== 'AbortError') addLog('err', e.message); }
+}
+
+function mkImageUrl(inputN, layerName, filePath) {
+  const h = document.getElementById('vmixHost').value, p = document.getElementById('vmixPort').value;
+  return `http://${h}:${p}/api?Function=SetImage&Input=${inputN}&SelectedName=${encodeURIComponent(layerName)}&Value=${encodeURIComponent(filePath)}`;
+}
+
+async function applyImage() {
+  let filePath = document.getElementById('imgFilePath').value.trim();
+  if (!filePath) {
+    const lbl = document.getElementById('imgSourceLabel').textContent.trim();
+    if (lbl && !lbl.startsWith('—')) filePath = lbl;
+  }
+  if (!filePath) { addLog('err', 'Select a file in the folder browser first (Step 5).'); return; }
+  document.getElementById('imgFilePath').value = filePath;
+  const nums = getNums();
+  if (!nums.length) { addLog('err', 'No inputs added in sidebar.'); return; }
+  const btn = document.getElementById('applyImgBtn'); btn.disabled = true;
+  const pgW = document.getElementById('pgImg'), pgF = document.getElementById('pfImg');
+  pgW.style.display = 'block';
+  addLog('info', `Applying image "${filePath}" → ${selectedImageLayer} on ${nums.length} input(s)…`);
+  let ok = 0, fail = 0;
+  for (let i = 0; i < nums.length; i++) {
+    pgF.style.width = (i / nums.length * 100) + '%';
+    const n = nums[i];
+    try {
+      const res = await fetch(mkImageUrl(n, selectedImageLayer, filePath), { signal: AbortSignal.timeout(3000) });
+      if (res.ok) { addLog('ok', `Input ${n}: ✓`); ok++; }
+      else { addLog('err', `Input ${n}: HTTP ${res.status}`); fail++; }
+    } catch(e) { addLog('err', `Input ${n}: ${e.message}`); fail++; }
+  }
+  pgF.style.width = '100%';
+  setTimeout(() => { pgW.style.display = 'none'; pgF.style.width = '0%'; }, 1100);
+  addLog('info', `Done — ${ok} ok, ${fail} failed.`);
+  btn.disabled = false;
+}
+
+function showImagePreview() {
+  let filePath = document.getElementById('imgFilePath').value.trim();
+  // Fallback: read from the source display label if hidden input is empty
+  if (!filePath) {
+    const lbl = document.getElementById('imgSourceLabel').textContent.trim();
+    if (lbl && !lbl.startsWith('—')) filePath = lbl;
+  }
+  if (!filePath) { addLog('err','Select a file in the folder browser first (Step 5).'); return; }
+  const nums = getNums();
+  if (!nums.length) { addLog('err','No inputs added in the sidebar.'); return; }
+  // Sync hidden input in case we used fallback
+  document.getElementById('imgFilePath').value = filePath;
+  const url = mkImageUrl(nums[0], selectedImageLayer, filePath);
+  const colored = url
+    .replace(/(Function=)([^&]+)/,'$1<em>$2</em>')
+    .replace(/(Input=)([^&]+)/,'$1<em>$2</em>')
+    .replace(/(SelectedName=)([^&]+)/,'$1<em>$2</em>')
+    .replace(/(Value=)([^&]+)/,'$1<em>$2</em>');
+  document.getElementById('imgPrevNum').textContent = nums[0];
+  document.getElementById('imgPrevUrl').innerHTML = colored;
+  document.getElementById('imgPrevBox').classList.add('visible');
+  addLog('info','Image preview (input '+nums[0]+'): '+url);
+}
+
+// ═══════════════════════════════════════════════════
+//  COLOR GATE
+// ═══════════════════════════════════════════════════
+const GATE_COLORS = [
+  { name:'Red',    hex:'#cc0000' },
+  { name:'Orange', hex:'#c05000' },
+  { name:'Yellow', hex:'#b8860b' },
+  { name:'Green',  hex:'#006400' },
+  { name:'Teal',   hex:'#006060' },
+  { name:'Blue',   hex:'#0033cc' },
+  { name:'Indigo', hex:'#2e0080' },
+  { name:'Purple', hex:'#6b006b' },
+  { name:'Pink',   hex:'#cc0077' },
+  { name:'White',  hex:'#f0f0f0', border:true },
+  { name:'Brown',  hex:'#5c2200' },
+  { name:'Gray',   hex:'#404040' },
+];
+const GATE_CORRECT = ['Red','Green','Blue'];
+let gateSelected = [];
+
+function buildGate(){
+  // Always show gate on every page load — sessionStorage.removeItem ensures
+  // even refresh triggers it. Gate only skips if unlocked THIS load.
+  if(window._gateUnlocked){
+    document.getElementById('colorGate').style.display='none';
+    return;
+  }
+  // Shuffle colors
+  const shuffled = [...GATE_COLORS].sort(()=>Math.random()-0.5);
+  const grid = document.getElementById('gateGrid');
+  grid.innerHTML = '';
+  shuffled.forEach(c=>{
+    const sw = document.createElement('div');
+    sw.className = 'gate-swatch';
+    sw.style.background = c.hex;
+    if(c.border) sw.style.border = '3px solid #4b5563';
+    sw.dataset.name = c.name;
+    sw.title = ''; // no tooltip — keeps it a puzzle
+    sw.onclick = ()=> toggleGateSwatch(sw, c.name);
+    grid.appendChild(sw);
+  });
+}
+
+function toggleGateSwatch(el, name){
+  if(el.classList.contains('selected')){
+    el.classList.remove('selected');
+    gateSelected = gateSelected.filter(n=>n!==name);
+  } else {
+    if(gateSelected.length >= 3){ return; } // max 3
+    el.classList.add('selected');
+    gateSelected.push(name);
+  }
+  const count = gateSelected.length;
+  document.getElementById('gateCount').textContent = count+' / 3 selected';
+  document.getElementById('gateBtn').disabled = count !== 3;
+  document.getElementById('gateHint').textContent = '';
+}
+
+function checkGate(){
+  const correct = GATE_CORRECT.every(c=>gateSelected.includes(c)) && gateSelected.length===3;
+  if(correct){
+    window._gateUnlocked = true;
+    const gate = document.getElementById('colorGate');
+    gate.classList.add('unlocked');
+    setTimeout(()=>gate.style.display='none', 500);
+  } else {
+    // Shake wrong ones and reset
+    document.querySelectorAll('.gate-swatch.selected').forEach(el=>{
+      el.classList.add('wrong');
+      setTimeout(()=>el.classList.remove('wrong'),400);
+    });
+    document.getElementById('gateHint').textContent = 'Not quite — think primary colors.';
+    setTimeout(()=>{
+      document.querySelectorAll('.gate-swatch.selected').forEach(el=>el.classList.remove('selected'));
+      gateSelected=[];
+      document.getElementById('gateCount').textContent='0 / 3 selected';
+      document.getElementById('gateBtn').disabled=true;
+    },420);
+  }
+}
+
+buildGate();
+// ═══════════════════════════════════════════════════
+// Clear all saved settings on every page load
+const keepGistId = localStorage.getItem('db_gist_id');
+localStorage.clear();
+if(keepGistId) localStorage.setItem('db_gist_id', keepGistId);
+sessionStorage.clear();
+// ═══════════════════════════════════════════════════
+buildPalette('pal-core','pal-ext','col');
+buildPalette('img-pal-core','img-pal-ext','img');
+addRow();
+rebuildLayerSelector();
+updCounts();
+dbAutoConnect();
+</script>
+</body>
+</html>
