@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USCC Pattern Recoloring Tool</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --dim: #484f58;
+    --green: #238636; --green-hover: #2ea043; --blue: #58a6ff;
+    --red: #da3633; --accent: #1f6feb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* HEADER */
+  .header { background:var(--surface); border-bottom:2px solid var(--green); padding:18px 28px; display:flex; align-items:center; justify-content:space-between; }
+  .header-left { display:flex; align-items:center; gap:12px; }
+  .header h1 { font-size:20px; font-weight:700; }
+  .header .subtitle { color:var(--blue); font-size:12px; letter-spacing:0.5px; }
+
+  .container { max-width:1100px; margin:0 auto; padding:28px 20px; }
+
+  /* SECTIONS */
+  .section { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:24px; position:relative; }
+  .section-header { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+  .section-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; }
+
+  /* PATTERN GRID */
+  .pattern-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  @media(max-width:600px){ .pattern-grid{grid-template-columns:repeat(2,1fr);} }
+  .pattern-card { background:var(--bg); border:2px solid var(--border); border-radius:8px; padding:16px 12px; text-align:center; cursor:pointer; transition:all 0.2s; }
+  .pattern-card:hover { border-color:var(--muted); transform:translateY(-2px); }
+  .pattern-card.selected { border-color:var(--blue); box-shadow:0 0 0 3px rgba(88,166,255,0.2); }
+  .pattern-card .icon { font-size:36px; margin-bottom:6px; display:block; }
+  .pattern-card .label { font-size:13px; font-weight:600; }
+  .pattern-card .count { font-size:10px; color:var(--dim); margin-top:2px; }
+  .pattern-card.selected .label { color:var(--blue); }
+
+  /* COLOR PALETTE */
+  .color-section-label { font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:1px; margin:14px 0 8px 0; }
+  .color-section-label:first-of-type { margin-top:0; }
+  .custom-row { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+  .custom-row input[type="color"] { width:44px; height:38px; border:2px solid var(--border); border-radius:6px; background:var(--bg); cursor:pointer; padding:2px; }
+  .custom-row input[type="color"]::-webkit-color-swatch-wrapper { padding:0; }
+  .custom-row input[type="color"]::-webkit-color-swatch { border:none; border-radius:3px; }
+  .hex-box { font-family:'SF Mono',Monaco,monospace; font-size:14px; background:var(--bg); padding:8px 14px; border-radius:6px; border:1px solid var(--border); color:var(--text); font-weight:600; min-width:90px; text-align:center; }
+  .color-name-display { font-size:13px; color:var(--muted); }
+
+  .palette-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  @media(max-width:700px){ .palette-grid{grid-template-columns:repeat(3,1fr);} }
+  .swatch { padding:10px 4px; border-radius:6px; cursor:pointer; border:2px solid transparent; text-align:center; transition:all 0.15s; position:relative; }
+  .swatch:hover { transform:scale(1.05); z-index:1; }
+  .swatch.selected { border-color:#fff; box-shadow:0 0 0 3px rgba(88,166,255,0.4); }
+  .swatch .s-name { font-size:9px; font-weight:700; line-height:1.2; margin-bottom:2px; }
+  .swatch .s-hex { font-size:8px; font-family:monospace; opacity:0.75; }
+
+  /* PROCESS */
+  .process-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .btn-go { background:var(--green); color:#fff; font-size:15px; padding:12px 28px; }
+  .btn-go:hover:not(:disabled) { background:var(--green-hover); transform:translateY(-1px); }
+  .btn-zip { background:var(--accent); color:#fff; }
+  .btn-zip:hover:not(:disabled) { background:#388bfd; }
+  .btn-secondary { background:#21262d; color:var(--text); border:1px solid var(--border); }
+  .btn-secondary:hover { background:var(--border); }
+
+  .progress-wrap { margin-top:16px; display:none; }
+  .progress-bar { width:100%; height:8px; background:#21262d; border-radius:4px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--green); width:0%; transition:width 0.15s; border-radius:4px; }
+  .progress-text { display:flex; justify-content:space-between; margin-top:6px; font-size:12px; color:var(--muted); }
+  .progress-text .done { color:#7ee787; }
+
+  /* OUTPUT */
+  .output-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+  .out-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center; }
+  .out-card .checker { background-image:linear-gradient(45deg,#1a1a2e 25%,transparent 25%),linear-gradient(-45deg,#1a1a2e 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1a2e 75%),linear-gradient(-45deg,transparent 75%,#1a1a2e 75%); background-size:12px 12px; background-position:0 0,0 6px,6px -6px,-6px 0; background-color:#12121f; border-radius:4px; padding:6px; margin-bottom:6px; display:flex; align-items:center; justify-content:center; min-height:80px; }
+  .out-card img { max-width:100%; max-height:80px; object-fit:contain; image-rendering:auto; }
+  .out-card .fname { font-size:9px; color:var(--muted); margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .out-card .btn { width:100%; justify-content:center; padding:6px; font-size:11px; }
+
+  .hidden { display:none!important; }
+
+  /* Loading spinner */
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.6s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  .empty-state { text-align:center; padding:30px; color:var(--dim); }
+  .empty-state .icon { font-size:40px; margin-bottom:8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🎨 Pattern Recoloring Tool</h1>
+    <span class="subtitle">U.S. Chamber of Commerce Color System</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STEP 1: PATTERN SELECT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge">1</div>
+      <div class="section-title">Select Pattern Type</div>
+    </div>
+    <div class="pattern-grid" id="pattern-grid"></div>
+    <div id="pattern-status" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
+  </div>
+
+  <!-- STEP 2: COLOR SELECT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge">2</div>
+      <div class="section-title">Select Color</div>
+    </div>
+
+    <div class="custom-row">
+      <span style="font-size:13px;color:var(--muted);">Custom:</span>
+      <input type="color" id="custom-color" value="#313bfb">
+      <div class="hex-box" id="hex-display">#313bfb</div>
+      <div class="color-name-display" id="color-name-display">Bold Blue</div>
+    </div>
+
+    <div class="color-section-label">Core</div>
+    <div class="palette-grid" id="core-palette"></div>
+
+    <div class="color-section-label">Extended</div>
+    <div class="palette-grid" id="ext-palette"></div>
+  </div>
+
+  <!-- STEP 3: PROCESS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge">3</div>
+      <div class="section-title">Process & Export</div>
+    </div>
+
+    <div class="process-row">
+      <button class="btn btn-go" id="process-btn" onclick="processAll()" disabled>
+        ⚡ Recolor & Export
+      </button>
+      <button class="btn btn-zip hidden" id="zip-btn" onclick="downloadZip()">
+        📦 Download ZIP
+      </button>
+      <button class="btn btn-secondary hidden" id="dl-all-btn" onclick="downloadAllIndividual()">
+        ⬇ Download All
+      </button>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text">
+        <span id="progress-label">Ready</span>
+        <span id="progress-pct">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="section hidden" id="output-section">
+    <div class="section-header">
+      <div class="step-badge" style="background:var(--blue);">✓</div>
+      <div class="section-title">Output Preview</div>
+    </div>
+    <div class="output-grid" id="output-grid"></div>
+  </div>
+
+</div>
+
+<canvas id="work-canvas" style="display:none;"></canvas>
+
+<script>
+// ═══════════════════════════════════════════
+// PATTERN DEFINITIONS
+// Each pattern has a name, icon, and folder path
+// Images are loaded from ./patterns/{folder}/
+// ═══════════════════════════════════════════
+const PATTERNS = [
+  { id:"dotted",       name:"Dotted",        icon:"⠿",  folder:"dotted" },
+  { id:"kaleidoscope", name:"Kaleidoscope",  icon:"✦",  folder:"kaleidoscope" },
+  { id:"linear",       name:"Linear",        icon:"☰",  folder:"linear" },
+  { id:"pointed",      name:"Pointed",       icon:"▲",  folder:"pointed" },
+  { id:"stripe",       name:"Stripe",        icon:"⫽",  folder:"stripe" },
+  { id:"wedge",        name:"Wedge",         icon:"◣",  folder:"wedge" },
+];
+
+// ═══════════════════════════════════════════
+// MANIFEST: list image filenames per pattern
+// UPDATE THESE after you add your PNGs to each folder
+// ═══════════════════════════════════════════
+const MANIFEST = {
+  dotted: [],
+  kaleidoscope: [],
+  linear: [],
+  pointed: [],
+  stripe: [],
+  wedge: [],
+};
+
+// Auto-generate filenames if manifest is empty
+// Assumes files named: frame_001.png through frame_NNN.png
+// Set the count per pattern here:
+const FRAME_COUNTS = {
+  dotted: 121,
+  kaleidoscope: 121,
+  linear: 121,
+  pointed: 121,
+  stripe: 121,
+  wedge: 121,
+};
+
+// Build manifests from frame counts if empty
+Object.keys(FRAME_COUNTS).forEach(key => {
+  if (MANIFEST[key].length === 0 && FRAME_COUNTS[key] > 0) {
+    for (let i = 1; i <= FRAME_COUNTS[key]; i++) {
+      MANIFEST[key].push(`frame_${String(i).padStart(3,'0')}.png`);
+    }
+  }
+});
+
+// ═══════════════════════════════════════════
+// COLOR PALETTE (verified from Color Wheel V3.0)
+// ═══════════════════════════════════════════
+const CORE_COLORS = [
+  { name:"Optimistic Blue",  hex:"#dbf5ff" },
+  { name:"Optimistic Red",   hex:"#ffebfa" },
+  { name:"Bright Blue",      hex:"#81eef3" },
+  { name:"Bright Red",       hex:"#ffa3d2" },
+  { name:"Bold Blue",        hex:"#313bfb" },
+  { name:"Bold Red",         hex:"#ff2e18" },
+  { name:"Insightful Blue",  hex:"#004f91" },
+  { name:"Insightful Red",   hex:"#9a2136" },
+  { name:"Impactful Blue",   hex:"#001f5c" },
+  { name:"Impactful Red",    hex:"#450012" },
+];
+
+const EXT_COLORS = [
+  { name:"Optimistic Green",   hex:"#e3ffe3" },
+  { name:"Optimistic Yellow",  hex:"#f5f2d6" },
+  { name:"Optimistic Purple",  hex:"#f2ebff" },
+  { name:"Bright Green",       hex:"#adff6b" },
+  { name:"Bright Yellow",      hex:"#fff247" },
+  { name:"Bright Purple",      hex:"#d6baff" },
+  { name:"Bold Green",         hex:"#00c217" },
+  { name:"Bold Orange",        hex:"#ff8300" },
+  { name:"Bold Purple",        hex:"#ab91ff" },
+  { name:"Insightful Green",   hex:"#42614f" },
+  { name:"Insightful Orange",  hex:"#b1570c" },
+  { name:"Insightful Purple",  hex:"#594570" },
+  { name:"Impactful Green",    hex:"#13342b" },
+  { name:"Impactful Orange",   hex:"#6d3614" },
+  { name:"Impactful Purple",   hex:"#420a69" },
+];
+
+const ALL_COLORS = [...CORE_COLORS, ...EXT_COLORS];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let selectedPattern = null;
+let selectedColor = "#313bfb";
+let selectedColorName = "Bold Blue";
+let loadedImages = []; // { name, img }
+let outputBlobs = []; // { name, blob, url }
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  renderPatterns();
+  renderPalette('core-palette', CORE_COLORS);
+  renderPalette('ext-palette', EXT_COLORS);
+
+  // Set default selected color
+  setTimeout(() => {
+    document.querySelectorAll('.swatch').forEach(s => {
+      if (s.dataset.hex === '#313bfb') s.classList.add('selected');
+    });
+  }, 0);
+
+  document.getElementById('custom-color').addEventListener('input', (e) => {
+    selectColor(e.target.value, 'Custom');
+  });
+}
+
+// ═══════════════════════════════════════════
+// PATTERN RENDERING
+// ═══════════════════════════════════════════
+function renderPatterns() {
+  const grid = document.getElementById('pattern-grid');
+  PATTERNS.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pattern-card';
+    card.dataset.id = p.id;
+    const count = MANIFEST[p.id]?.length || FRAME_COUNTS[p.id] || 0;
+    card.innerHTML = `
+      <span class="icon">${p.icon}</span>
+      <div class="label">${p.name}</div>
+      <div class="count">${count > 0 ? count + ' frames' : 'Add frames to /patterns/' + p.folder + '/'}</div>
+    `;
+    card.onclick = () => selectPattern(p.id, card);
+    grid.appendChild(card);
+  });
+}
+
+function selectPattern(id, el) {
+  selectedPattern = id;
+  document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+
+  // Load images for this pattern
+  loadPatternImages(id);
+}
+
+async function loadPatternImages(id) {
+  const status = document.getElementById('pattern-status');
+  const files = MANIFEST[id];
+
+  if (!files || files.length === 0) {
+    status.innerHTML = '⚠️ No frames found. Add PNGs to <code>./patterns/' + id + '/</code> and update the MANIFEST or FRAME_COUNTS in the HTML.';
+    loadedImages = [];
+    updateProcessBtn();
+    return;
+  }
+
+  status.innerHTML = '<span class="spinner"></span> Loading ' + files.length + ' frames...';
+  loadedImages = [];
+
+  let loaded = 0;
+  let failed = 0;
+
+  for (const fname of files) {
+    try {
+      const img = await loadImage('./patterns/' + id + '/' + fname);
+      loadedImages.push({ name: fname, img });
+      loaded++;
+    } catch(e) {
+      failed++;
+      console.warn('Failed to load:', fname, e);
+    }
+    status.textContent = `Loading... ${loaded + failed}/${files.length}`;
+  }
+
+  if (failed > 0) {
+    status.innerHTML = `✅ Loaded ${loaded} frames` + (failed > 0 ? ` (${failed} failed)` : '');
+  } else {
+    status.innerHTML = `✅ ${loaded} frames ready`;
+  }
+
+  updateProcessBtn();
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// ═══════════════════════════════════════════
+// COLOR PALETTE RENDERING
+// ═══════════════════════════════════════════
+function renderPalette(containerId, colors) {
+  const grid = document.getElementById(containerId);
+  colors.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'swatch';
+    div.style.backgroundColor = c.hex;
+    div.dataset.hex = c.hex;
+    div.dataset.name = c.name;
+
+    const lum = getLuminance(c.hex);
+    const tc = lum > 0.45 ? '#000' : '#fff';
+
+    div.innerHTML = `<div class="s-name" style="color:${tc}">${c.name}</div><div class="s-hex" style="color:${tc}">${c.hex}</div>`;
+    div.onclick = () => {
+      selectColor(c.hex, c.name);
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+      div.classList.add('selected');
+    };
+    grid.appendChild(div);
+  });
+}
+
+function selectColor(hex, name) {
+  selectedColor = hex;
+  selectedColorName = name || 'Custom';
+  document.getElementById('custom-color').value = hex;
+  document.getElementById('hex-display').textContent = hex;
+  document.getElementById('color-name-display').textContent = name || '';
+
+  if (name === 'Custom') {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+  }
+}
+
+function getLuminance(hex) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  return 0.299*r + 0.587*g + 0.114*b;
+}
+
+// ═══════════════════════════════════════════
+// PROCESSING (matches Python logic exactly)
+// Grayscale → Colorize (black→black, white→color)
+// Alpha channel preserved
+// ═══════════════════════════════════════════
+function updateProcessBtn() {
+  const btn = document.getElementById('process-btn');
+  btn.disabled = !(selectedPattern && loadedImages.length > 0);
+}
+
+async function processAll() {
+  if (loadedImages.length === 0) return;
+
+  const canvas = document.getElementById('work-canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressFill = document.getElementById('progress-fill');
+  const progressLabel = document.getElementById('progress-label');
+  const progressPct = document.getElementById('progress-pct');
+  const processBtn = document.getElementById('process-btn');
+
+  processBtn.disabled = true;
+  processBtn.innerHTML = '<span class="spinner"></span> Processing...';
+  progressWrap.style.display = 'block';
+  outputBlobs = [];
+
+  // Parse target color
+  const tR = parseInt(selectedColor.slice(1,3), 16);
+  const tG = parseInt(selectedColor.slice(3,5), 16);
+  const tB = parseInt(selectedColor.slice(5,7), 16);
+
+  const total = loadedImages.length;
+
+  for (let i = 0; i < total; i++) {
+    const src = loadedImages[i];
+    canvas.width = src.img.naturalWidth;
+    canvas.height = src.img.naturalHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(src.img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Same algorithm as Python:
+    // gray = 0.299*R + 0.587*G + 0.114*B
+    // t = gray / 255
+    // new_R = targetR * t, new_G = targetG * t, new_B = targetB * t
+    // alpha unchanged
+    for (let p = 0; p < data.length; p += 4) {
+      const gray = 0.299 * data[p] + 0.587 * data[p+1] + 0.114 * data[p+2];
+      const t = gray / 255;
+      data[p]   = Math.round(tR * t);
+      data[p+1] = Math.round(tG * t);
+      data[p+2] = Math.round(tB * t);
+      // data[p+3] alpha stays
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    // Build output filename: patternName_colorName_originalName
+    const safeName = selectedColorName.replace(/\s+/g, '-').toLowerCase();
+    const outName = src.name;
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    outputBlobs.push({ name: outName, blob, url });
+
+    const pct = Math.round(((i+1) / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = `Processing ${i+1} of ${total}...`;
+    progressPct.textContent = pct + '%';
+
+    // Yield to UI thread
+    await new Promise(r => setTimeout(r, 5));
+  }
+
+  progressLabel.innerHTML = `<span class="done">✅ Done! ${total} images recolored as ${selectedColorName} (${selectedColor})</span>`;
+  processBtn.disabled = false;
+  processBtn.innerHTML = '⚡ Recolor & Export';
+  document.getElementById('zip-btn').classList.remove('hidden');
+  document.getElementById('dl-all-btn').classList.remove('hidden');
+
+  renderOutput();
+}
+
+// ═══════════════════════════════════════════
+// OUTPUT
+// ═══════════════════════════════════════════
+function renderOutput() {
+  const section = document.getElementById('output-section');
+  const grid = document.getElementById('output-grid');
+  section.classList.remove('hidden');
+  grid.innerHTML = '';
+
+  outputBlobs.forEach((o, i) => {
+    const div = document.createElement('div');
+    div.className = 'out-card';
+    div.innerHTML = `
+      <div class="checker"><img src="${o.url}" alt="${o.name}"></div>
+      <div class="fname" title="${o.name}">${o.name}</div>
+      <button class="btn btn-secondary" onclick="downloadOne(${i})">⬇ Download</button>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function downloadOne(i) {
+  const o = outputBlobs[i];
+  const a = document.createElement('a');
+  a.href = o.url;
+  a.download = o.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function downloadAllIndividual() {
+  for (let i = 0; i < outputBlobs.length; i++) {
+    downloadOne(i);
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
+async function downloadZip() {
+  const btn = document.getElementById('zip-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Zipping...';
+
+  try {
+    const zip = new JSZip();
+    const folderName = selectedPattern + '_' + selectedColorName.replace(/\s+/g, '-').toLowerCase();
+    const folder = zip.folder(folderName);
+
+    outputBlobs.forEach(o => {
+      folder.file(o.name, o.blob);
+    });
+
+    const content = await zip.generateAsync({ type:'blob' }, (meta) => {
+      // progress callback
+    });
+
+    saveAs(content, folderName + '.zip');
+  } catch(e) {
+    console.error('ZIP failed:', e);
+    // Fallback to individual downloads
+    await downloadAllIndividual();
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📦 Download ZIP';
+}
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
