@@ -16,7 +16,7 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-  .header { background:var(--surface); border-bottom:2px solid var(--green); padding:18px 28px; display:flex; align-items:center; gap:12px; }
+  .header { background:var(--surface); border-bottom:2px solid var(--green); padding:18px 28px; }
   .header h1 { font-size:20px; font-weight:700; }
   .header .subtitle { color:var(--blue); font-size:12px; letter-spacing:0.5px; }
 
@@ -36,19 +36,7 @@
   .pattern-card .icon { font-size:36px; margin-bottom:6px; display:block; }
   .pattern-card .label { font-size:13px; font-weight:600; }
   .pattern-card.selected .label { color:var(--blue); }
-
-  /* DROP ZONE */
-  .drop-zone { border:2px dashed var(--border); border-radius:10px; padding:40px 20px; text-align:center; cursor:pointer; transition:all 0.2s; }
-  .drop-zone:hover, .drop-zone.dragover { border-color:var(--blue); background:rgba(88,166,255,0.05); }
-  .drop-zone .dz-icon { font-size:40px; margin-bottom:8px; }
-  .drop-zone .dz-text { font-size:14px; color:var(--muted); }
-  .drop-zone .dz-text strong { color:var(--blue); }
-  .file-input { display:none; }
-  .file-count { margin-top:12px; font-size:13px; color:var(--muted); }
-  .file-count .num { color:#7ee787; font-weight:700; }
-  .file-list { margin-top:10px; max-height:120px; overflow-y:auto; font-size:11px; color:var(--dim); font-family:monospace; padding:8px; background:var(--bg); border-radius:6px; }
-  .clear-btn { margin-top:8px; background:none; border:1px solid var(--border); color:var(--muted); padding:4px 12px; border-radius:4px; font-size:11px; cursor:pointer; }
-  .clear-btn:hover { border-color:var(--muted); color:var(--text); }
+  .pattern-card .sub { font-size:10px; color:var(--dim); margin-top:2px; }
 
   /* COLOR PALETTE */
   .color-section-label { font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:1px; margin:14px 0 8px 0; }
@@ -68,22 +56,19 @@
   .swatch .s-name { font-size:9px; font-weight:700; line-height:1.2; margin-bottom:2px; }
   .swatch .s-hex { font-size:8px; font-family:monospace; opacity:0.75; }
 
-  /* EXPORT OPTIONS */
+  /* EXPORT */
   .export-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
   .export-row label { font-size:13px; color:var(--muted); white-space:nowrap; }
-  .export-input { font-family:'SF Mono',Monaco,monospace; font-size:14px; background:var(--bg); padding:8px 14px; border-radius:6px; border:1px solid var(--border); color:var(--text); font-weight:600; width:280px; }
+  .export-input { font-family:'SF Mono',Monaco,monospace; font-size:14px; background:var(--bg); padding:8px 14px; border-radius:6px; border:1px solid var(--border); color:var(--text); font-weight:600; width:320px; }
   .export-input:focus { outline:none; border-color:var(--blue); }
   .export-preview { font-size:11px; color:var(--dim); font-family:monospace; }
 
-  /* BUTTONS */
   .btn { padding:10px 20px; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
   .btn:disabled { opacity:0.4; cursor:not-allowed; }
   .btn-go { background:var(--green); color:#fff; font-size:15px; padding:12px 28px; }
   .btn-go:hover:not(:disabled) { background:var(--green-hover); transform:translateY(-1px); }
   .btn-zip { background:var(--accent); color:#fff; }
   .btn-zip:hover:not(:disabled) { background:#388bfd; }
-  .btn-secondary { background:#21262d; color:var(--text); border:1px solid var(--border); }
-  .btn-secondary:hover { background:var(--border); }
 
   .process-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 
@@ -93,13 +78,18 @@
   .progress-text { display:flex; justify-content:space-between; margin-top:6px; font-size:12px; color:var(--muted); }
   .progress-text .done { color:#7ee787; }
 
+  /* STATUS */
+  .status-bar { margin-top:12px; padding:10px 14px; border-radius:6px; font-size:12px; display:none; }
+  .status-bar.loading { background:rgba(88,166,255,0.1); color:var(--blue); display:block; }
+  .status-bar.success { background:rgba(35,134,54,0.15); color:#7ee787; display:block; }
+  .status-bar.error { background:rgba(218,54,51,0.15); color:#ff7b72; display:block; }
+
   /* OUTPUT */
   .output-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; max-height:500px; overflow-y:auto; }
   .out-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center; }
   .out-card .checker { background-image:linear-gradient(45deg,#1a1a2e 25%,transparent 25%),linear-gradient(-45deg,#1a1a2e 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1a2e 75%),linear-gradient(-45deg,transparent 75%,#1a1a2e 75%); background-size:12px 12px; background-position:0 0,0 6px,6px -6px,-6px 0; background-color:#12121f; border-radius:4px; padding:6px; margin-bottom:6px; display:flex; align-items:center; justify-content:center; min-height:80px; }
   .out-card img { max-width:100%; max-height:80px; object-fit:contain; }
-  .out-card .fname { font-size:9px; color:var(--muted); margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .out-card .btn { width:100%; justify-content:center; padding:6px; font-size:11px; }
+  .out-card .fname { font-size:9px; color:var(--muted); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   .hidden { display:none!important; }
   .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.6s linear infinite; }
@@ -109,45 +99,26 @@
 <body>
 
 <div class="header">
-  <div>
-    <h1>🎨 Pattern Recoloring Tool</h1>
-    <span class="subtitle">U.S. Chamber of Commerce Color System</span>
-  </div>
+  <h1>🎨 Pattern Recoloring Tool</h1>
+  <span class="subtitle">U.S. Chamber of Commerce Color System</span>
 </div>
 
 <div class="container">
 
-  <!-- STEP 1: PATTERN TYPE -->
+  <!-- STEP 1: PATTERN -->
   <div class="section">
     <div class="section-header">
       <div class="step-badge">1</div>
       <div class="section-title">Select Pattern Type</div>
     </div>
     <div class="pattern-grid" id="pattern-grid"></div>
+    <div class="status-bar" id="load-status"></div>
   </div>
 
-  <!-- STEP 2: UPLOAD FILES -->
+  <!-- STEP 2: COLOR -->
   <div class="section">
     <div class="section-header">
       <div class="step-badge">2</div>
-      <div class="section-title">Upload Source PNGs</div>
-    </div>
-    <div class="drop-zone" id="drop-zone">
-      <div class="dz-icon">📂</div>
-      <div class="dz-text">Drag & drop PNG files here or <strong>click to browse</strong></div>
-    </div>
-    <input type="file" class="file-input" id="file-input" multiple accept=".png">
-    <div class="file-count hidden" id="file-count">
-      <span class="num" id="file-num">0</span> files loaded
-      <button class="clear-btn" onclick="clearFiles()">✕ Clear</button>
-    </div>
-    <div class="file-list hidden" id="file-list"></div>
-  </div>
-
-  <!-- STEP 3: COLOR -->
-  <div class="section">
-    <div class="section-header">
-      <div class="step-badge">3</div>
       <div class="section-title">Select Output Color</div>
     </div>
     <div class="custom-row">
@@ -162,28 +133,21 @@
     <div class="palette-grid" id="ext-palette"></div>
   </div>
 
-  <!-- STEP 4: EXPORT -->
+  <!-- STEP 3: EXPORT -->
   <div class="section">
     <div class="section-header">
-      <div class="step-badge">4</div>
+      <div class="step-badge">3</div>
       <div class="section-title">Export Settings & Process</div>
     </div>
-
     <div class="export-row">
       <label>Export prefix:</label>
-      <input type="text" class="export-input" id="export-prefix" placeholder="e.g. Dotted Bold Red" value="">
-      <div class="export-preview" id="export-preview">→ Dotted Bold Red_00000.png</div>
+      <input type="text" class="export-input" id="export-prefix" placeholder="Auto-generated from pattern + color" value="">
+      <div class="export-preview" id="export-preview"></div>
     </div>
-
     <div class="process-row">
-      <button class="btn btn-go" id="process-btn" onclick="processAll()" disabled>
-        ⚡ Recolor & Export ZIP
-      </button>
-      <button class="btn btn-zip hidden" id="zip-btn" onclick="downloadZip()">
-        📦 Download ZIP Again
-      </button>
+      <button class="btn btn-go" id="process-btn" onclick="processAll()" disabled>⚡ Recolor & Export ZIP</button>
+      <button class="btn btn-zip hidden" id="zip-btn" onclick="downloadZip()">📦 Download ZIP Again</button>
     </div>
-
     <div class="progress-wrap" id="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
       <div class="progress-text">
@@ -208,19 +172,59 @@
 
 <script>
 // ═══════════════════════════════════════════
-// PATTERNS
+// PATTERN CONFIG
+// Each pattern: folder name, source file prefix, frame count, frame digits
 // ═══════════════════════════════════════════
 const PATTERNS = [
-  { id:"dotted",       name:"Dotted",       icon:"⠿" },
-  { id:"kaleidoscope", name:"Kaleidoscope", icon:"✦" },
-  { id:"linear",       name:"Linear",       icon:"☰" },
-  { id:"pointed",      name:"Pointed",      icon:"▲" },
-  { id:"stripe",       name:"Stripe",       icon:"⫽" },
-  { id:"wedge",        name:"Wedge",        icon:"◣" },
+  {
+    id: "dotted",
+    name: "Dotted",
+    icon: "⠿",
+    folder: "dotted",
+    prefix: "Dotted Bright Red",
+    frames: 121,    // 00000 to 00120
+    digits: 5
+  },
+  {
+    id: "kaleidoscope",
+    name: "Kaleidoscope",
+    icon: "✦",
+    folder: "kaleidoscope",
+    prefix: "Kaleidoscopic Optomisitic Red",
+    frames: 121,
+    digits: 5
+  },
+  {
+    id: "linear",
+    name: "Linear",
+    icon: "☰",
+    folder: "linear",
+    prefix: "Linear Bright Blue",
+    frames: 121,
+    digits: 5
+  },
+  {
+    id: "pointed",
+    name: "Pointed",
+    icon: "▲",
+    folder: "pointed",
+    prefix: "Pointed Bold Red",
+    frames: 121,
+    digits: 5
+  },
+  {
+    id: "stripe",
+    name: "Stripe",
+    icon: "⫽",
+    folder: "stripe",
+    prefix: "Stripped Bold Red",
+    frames: 121,
+    digits: 5
+  }
 ];
 
 // ═══════════════════════════════════════════
-// COLORS (verified from Color Wheel V3.0)
+// COLORS
 // ═══════════════════════════════════════════
 const CORE_COLORS = [
   { name:"Optimistic Blue",  hex:"#dbf5ff" },
@@ -259,7 +263,7 @@ const EXT_COLORS = [
 let selectedPattern = null;
 let selectedColor = "#313bfb";
 let selectedColorName = "Bold Blue";
-let uploadedFiles = []; // File objects
+let loadedImages = []; // { name, img }
 let lastZipBlob = null;
 
 // ═══════════════════════════════════════════
@@ -269,10 +273,7 @@ function init() {
   renderPatterns();
   renderPalette('core-palette', CORE_COLORS);
   renderPalette('ext-palette', EXT_COLORS);
-  setupDropZone();
-  setupExportPrefix();
 
-  // Default color selection
   setTimeout(() => {
     document.querySelectorAll('.swatch').forEach(s => {
       if (s.dataset.hex === '#313bfb') s.classList.add('selected');
@@ -282,6 +283,8 @@ function init() {
   document.getElementById('custom-color').addEventListener('input', (e) => {
     selectColor(e.target.value, 'Custom');
   });
+
+  document.getElementById('export-prefix').addEventListener('input', updateExportPreview);
 }
 
 // ═══════════════════════════════════════════
@@ -292,78 +295,77 @@ function renderPatterns() {
   PATTERNS.forEach(p => {
     const card = document.createElement('div');
     card.className = 'pattern-card';
-    card.innerHTML = `<span class="icon">${p.icon}</span><div class="label">${p.name}</div>`;
+    card.dataset.id = p.id;
+    card.innerHTML = `
+      <span class="icon">${p.icon}</span>
+      <div class="label">${p.name}</div>
+      <div class="sub">${p.frames} frames</div>
+    `;
     card.onclick = () => {
-      selectedPattern = p.id;
+      selectedPattern = p;
       document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
+      loadPatternImages(p);
       updateExportPrefix();
-      updateProcessBtn();
     };
     grid.appendChild(card);
   });
 }
 
-// ═══════════════════════════════════════════
-// FILE UPLOAD (drag & drop + click)
-// ═══════════════════════════════════════════
-function setupDropZone() {
-  const zone = document.getElementById('drop-zone');
-  const input = document.getElementById('file-input');
+async function loadPatternImages(pattern) {
+  const status = document.getElementById('load-status');
+  status.className = 'status-bar loading';
+  status.innerHTML = '<span class="spinner"></span> Loading ' + pattern.frames + ' frames from /' + pattern.folder + '/...';
 
-  zone.onclick = () => input.click();
+  loadedImages = [];
+  let loaded = 0;
+  let failed = 0;
 
-  zone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    zone.classList.add('dragover');
-  });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    zone.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files);
-  });
+  for (let i = 0; i < pattern.frames; i++) {
+    const frameNum = String(i).padStart(pattern.digits, '0');
+    const filename = pattern.prefix + '_' + frameNum + '.png';
+    const path = './patterns/' + pattern.folder + '/' + filename;
 
-  input.addEventListener('change', (e) => {
-    handleFiles(e.target.files);
-  });
-}
+    try {
+      const img = await loadImage(path);
+      loadedImages.push({ name: filename, img, index: i });
+      loaded++;
+    } catch(e) {
+      failed++;
+    }
 
-function handleFiles(fileList) {
-  const pngs = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.png'));
-  // Sort by name for consistent ordering
-  pngs.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-  uploadedFiles = pngs;
-
-  const countEl = document.getElementById('file-count');
-  const numEl = document.getElementById('file-num');
-  const listEl = document.getElementById('file-list');
-
-  if (pngs.length > 0) {
-    countEl.classList.remove('hidden');
-    numEl.textContent = pngs.length;
-    listEl.classList.remove('hidden');
-    listEl.textContent = pngs.map(f => f.name).join('\n');
-  } else {
-    countEl.classList.add('hidden');
-    listEl.classList.add('hidden');
+    // Update status every 10 frames
+    if (i % 10 === 0 || i === pattern.frames - 1) {
+      status.innerHTML = '<span class="spinner"></span> Loading... ' + (loaded + failed) + '/' + pattern.frames +
+        (failed > 0 ? ' <span style="color:#ff7b72">(' + failed + ' failed)</span>' : '');
+    }
   }
 
-  updateExportPrefix();
+  if (failed === pattern.frames) {
+    status.className = 'status-bar error';
+    status.innerHTML = '❌ Could not load any frames. Check that files exist at:<br><code>./patterns/' + pattern.folder + '/' + pattern.prefix + '_00000.png</code>';
+  } else if (failed > 0) {
+    status.className = 'status-bar success';
+    status.innerHTML = '✅ Loaded ' + loaded + ' frames (' + failed + ' failed)';
+  } else {
+    status.className = 'status-bar success';
+    status.innerHTML = '✅ ' + loaded + ' frames ready';
+  }
+
   updateProcessBtn();
 }
 
-function clearFiles() {
-  uploadedFiles = [];
-  document.getElementById('file-input').value = '';
-  document.getElementById('file-count').classList.add('hidden');
-  document.getElementById('file-list').classList.add('hidden');
-  document.getElementById('output-section').classList.add('hidden');
-  updateProcessBtn();
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
 }
 
 // ═══════════════════════════════════════════
-// COLOR PALETTE
+// COLORS
 // ═══════════════════════════════════════════
 function renderPalette(containerId, colors) {
   const grid = document.getElementById(containerId);
@@ -407,15 +409,8 @@ function getLuminance(hex) {
 // ═══════════════════════════════════════════
 // EXPORT PREFIX
 // ═══════════════════════════════════════════
-function setupExportPrefix() {
-  const input = document.getElementById('export-prefix');
-  input.addEventListener('input', updateExportPreview);
-}
-
 function updateExportPrefix() {
-  const patternName = selectedPattern
-    ? PATTERNS.find(p => p.id === selectedPattern)?.name || ''
-    : '';
+  const patternName = selectedPattern ? selectedPattern.name : '';
   const prefix = patternName + (patternName ? ' ' : '') + selectedColorName;
   document.getElementById('export-prefix').value = prefix;
   updateExportPreview();
@@ -423,32 +418,19 @@ function updateExportPrefix() {
 
 function updateExportPreview() {
   const prefix = document.getElementById('export-prefix').value || 'output';
-  document.getElementById('export-preview').textContent = '→ ' + prefix + '_00000.png';
+  const digits = selectedPattern ? selectedPattern.digits : 5;
+  document.getElementById('export-preview').textContent = '→ ' + prefix + '_' + '0'.repeat(digits) + '.png';
 }
 
 // ═══════════════════════════════════════════
 // PROCESSING
 // ═══════════════════════════════════════════
 function updateProcessBtn() {
-  document.getElementById('process-btn').disabled = !(uploadedFiles.length > 0);
-}
-
-function readFileAsImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+  document.getElementById('process-btn').disabled = !(loadedImages.length > 0);
 }
 
 async function processAll() {
-  if (uploadedFiles.length === 0) return;
+  if (loadedImages.length === 0) return;
 
   const canvas = document.getElementById('work-canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -468,54 +450,42 @@ async function processAll() {
   const tB = parseInt(selectedColor.slice(5,7), 16);
 
   const prefix = document.getElementById('export-prefix').value || 'output';
-  const total = uploadedFiles.length;
+  const digits = selectedPattern ? selectedPattern.digits : 5;
+  const total = loadedImages.length;
 
-  // Build ZIP as we go
   const zip = new JSZip();
-  const folder = zip.folder(prefix.replace(/\s+/g, '_'));
+  const folder = zip.folder(prefix.replace(/[\s]+/g, '_'));
   const outputPreviews = [];
 
   for (let i = 0; i < total; i++) {
-    const file = uploadedFiles[i];
+    const src = loadedImages[i];
 
-    // Read file into image
-    const img = await readFileAsImage(file);
-
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+    canvas.width = src.img.naturalWidth;
+    canvas.height = src.img.naturalHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(src.img, 0, 0);
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    // Grayscale → Colorize (same as Python script)
-    // gray = 0.299*R + 0.587*G + 0.114*B
-    // t = gray / 255
-    // newR = targetR * t, newG = targetG * t, newB = targetB * t
-    // alpha unchanged
+    // Grayscale → Colorize (matches Python script)
     for (let p = 0; p < data.length; p += 4) {
       const gray = 0.299 * data[p] + 0.587 * data[p+1] + 0.114 * data[p+2];
       const t = gray / 255;
       data[p]   = Math.round(tR * t);
       data[p+1] = Math.round(tG * t);
       data[p+2] = Math.round(tB * t);
-      // alpha stays
+      // alpha unchanged
     }
 
     ctx.putImageData(imageData, 0, 0);
 
-    // Generate output filename: prefix_00000.png
-    const frameNum = String(i).padStart(5, '0');
+    const frameNum = String(src.index).padStart(digits, '0');
     const outName = prefix + '_' + frameNum + '.png';
 
-    // Get blob
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-    // Add to ZIP
     folder.file(outName, blob);
 
-    // Save first few for preview
     if (i < 12) {
       const url = URL.createObjectURL(blob);
       outputPreviews.push({ name: outName, url });
@@ -526,18 +496,15 @@ async function processAll() {
     progressLabel.textContent = 'Processing ' + (i+1) + ' of ' + total + '...';
     progressPct.textContent = pct + '%';
 
-    // Yield to UI
     if (i % 3 === 0) await new Promise(r => setTimeout(r, 5));
   }
 
-  // Generate ZIP blob
   progressLabel.textContent = 'Building ZIP...';
   lastZipBlob = await zip.generateAsync({ type:'blob' }, (meta) => {
     progressPct.textContent = 'ZIP ' + meta.percent.toFixed(0) + '%';
   });
 
-  // Auto-download
-  saveAs(lastZipBlob, prefix.replace(/\s+/g, '_') + '.zip');
+  saveAs(lastZipBlob, prefix.replace(/[\s]+/g, '_') + '.zip');
 
   progressLabel.innerHTML = '<span class="done">✅ Done! ' + total + ' images recolored → ZIP downloaded</span>';
   progressPct.textContent = '100%';
@@ -545,7 +512,6 @@ async function processAll() {
   processBtn.innerHTML = '⚡ Recolor & Export ZIP';
   document.getElementById('zip-btn').classList.remove('hidden');
 
-  // Show preview
   renderOutput(outputPreviews, total);
 }
 
@@ -581,13 +547,11 @@ function renderOutput(previews, total) {
 function downloadZip() {
   if (lastZipBlob) {
     const prefix = document.getElementById('export-prefix').value || 'output';
-    saveAs(lastZipBlob, prefix.replace(/\s+/g, '_') + '.zip');
+    saveAs(lastZipBlob, prefix.replace(/[\s]+/g, '_') + '.zip');
   }
 }
 
-// ═══════════════════════════════════════════
 // BOOT
-// ═══════════════════════════════════════════
 init();
 </script>
 </body>
